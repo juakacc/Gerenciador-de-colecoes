@@ -1,0 +1,273 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Menu.*;
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+
+import java.util.Calendar;
+import java.util.List;
+
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.*;
+import br.com.gerenciador.desejo.*;
+import br.com.gerenciador.exceptions.ItemNotFoundException;
+import br.com.gerenciador.interfaces.GerenciamentoIF;
+
+/**
+ * Classe para interar com o usuário do sistema com relação a atividades 
+ * que sejam relacionadas diretamente com o gerenciamento de desejos do
+ * usuário.
+ * */
+public class GerenciaDesejos implements GerenciamentoIF {
+	
+	private RepositorioItensDesejados meusDesejos;
+	private Acervo acervo;
+	
+	/**
+	 * Constrói o gerenciador e inicializa 
+	 * os atributos necessários.
+	 * */
+	public GerenciaDesejos() {
+		meusDesejos = RepositorioItensDesejados.getIntancia();
+		acervo = Acervo.getInstancia();
+	}
+	
+	/**
+	 * Método para delegar o que deve ser feito a partir da escolha do usuário
+	 * @param opcao - opção escolhida pelo usuario
+	 * */
+	public void selecionar(int opcao) {
+		int escolha;
+		Item item;
+		
+		switch (opcao) {
+		case 1:			//	Adicionar Item
+			
+			do {
+				menuTipoItem();
+				escolha = recuperarInt("Qual o tipo do item(1,2,3,4)? ");
+				
+				if (escolha == 0) {
+					break;
+				} else if (escolha >= 1 && escolha <= 4) {
+					item = criarDesejo(escolha);
+					
+					if (!acervo.pertence(item)) {
+						Calendar data = null;
+						String url = null;
+						if (recuperarBoolean("O item será lançado (1-sim/2-não)? ")) {		
+							data = recuperarData("Qual a data de lançamento (Ex: 11/11/1111)? ");
+						}
+						if (recuperarBoolean("Deseja informar uma URL (1-sim/2-não)? ")) {
+							url = recuperarString("Informe a URL...: ");
+						}
+						ItemDesejado desejo = new ItemDesejado(item, data, url);
+						if (meusDesejos.adicionarItem(desejo)) {
+							System.out.println("\nItem adicionado a sua WishList...");
+						}
+					} else {
+						System.out.println("\nEsse item já pertence a sua coleção...");
+					}
+					break;
+					
+				} else {
+					System.out.println(ENTRADA_INVALIDA);
+				}
+				
+			} while (true);
+			break;
+			
+		case 2:			//	Adquirir Item
+			if (meusDesejos.isVazio()) {
+				System.out.println("Nenhum item de desejo cadastrado... Realize um cadastro!");
+			} else {
+				try {
+					item = recuperarItemDesejado();
+					Calendar dataLancamento = meusDesejos.getItemDesejado(item).getData();
+					Calendar dataAtual = Calendar.getInstance();
+					
+					if (dataAtual.compareTo(dataLancamento) > 0) {
+						// altero o restante dos atributos
+						if (recuperarBoolean("Adicionar alguma observação(1-sim/2-não)? ")) {
+							String obs = recuperarString("Informe a observação: ");
+							item.setObservacao(obs);
+						}
+						meusDesejos.removerItem(item);
+						if (acervo.adicionarItem(item)) {
+							System.out.println("\nItem adquirido e adicionado a sua coleção...");
+						}
+						
+					} else {
+						System.out.println("\nEsse item não está a venda... Aguarde o lançamento!");
+					}
+					
+				} catch (ItemNotFoundException e) {
+					System.err.println(e.getMessage());
+				}
+			}
+			break;
+
+		case 3:			//	Remover item
+			if (meusDesejos.isVazio()) {
+				System.out.println("Nenhum item de desejo cadastrado... Realize um cadastro!");
+			} else {
+				try {
+					item = recuperarItemDesejado();
+					if (meusDesejos.removerItem(item)) {
+						System.out.println("\nItem removido da sua WishList...");
+					}
+				} catch (ItemNotFoundException e) {
+					System.err.println(e.getMessage());
+				}
+			}
+			break;
+			
+		case 4:			// Visualizar WishList
+			meusDesejos.verWishList();
+			break;
+		}
+		
+	}
+	
+	/**
+	 * Método para que o usuário escolha um item dentre os que estão
+	 * cadastrados em sua WishList.
+	 * @return item escolhido pelo usuário
+	 * @throws ItemNotFoundException - caso o usuário não escolha nenhum
+	 * dos itens.
+	 * */
+	private Item recuperarItemDesejado() throws ItemNotFoundException {
+		String titulo;
+		List<ItemDesejado> itens;
+		int escolha;
+		
+		titulo = recuperarString("Título: ");
+		itens = meusDesejos.getItem(titulo);
+		
+		System.out.println("\n ID");
+		for (int i = 0; i < itens.size(); i++) {
+			System.out.println("[" +(i+1)+ "] - " + itens.get(i).toString());
+		}
+		System.out.println("-------------------------------------");
+		
+		do {
+			escolha = recuperarInt("Qual o ID do item(0 - sair)? ");
+			if (escolha == 0) {
+				throw new ItemNotFoundException("Nenhum item foi escolhido!");
+			}
+		} while (escolha < 1 || escolha > itens.size());
+		
+		Item item = itens.get(escolha - 1).getItem();  
+		return item;
+	}
+	
+	/**
+	 * Cria um novo desejo de acordo com o tipo de item
+	 * que foi escolhido pelo usuário.
+	 * @param tipo - tipo do item a ser criado.
+	 * @return Novo item
+	 * */
+	private Item criarDesejo(int tipo) {
+		
+		switch (tipo) {
+			case 1:		// DVDCD
+				return dvdDesejado();
+			case 2:		// HQ
+				return hqDesejado();
+			case 3:		// Jogo de Tabuleiro
+				return jogoTDesejado();
+			case 4:		// Jogo de video game
+				return jogoVDesejado();
+			default:
+				return null;
+		}
+	}
+	
+	/**
+	 * Cria um jogo de video game como desejo do usuário.
+	 * @return o jogo com as caracteristicas desejadas
+	 * */
+	private JogoDeVideoGame jogoVDesejado() {
+		String titulo = "", console = "";
+		double preco = 0;
+		Dlc dlc = null;
+		
+		titulo = recuperarString("Informe título...................: ");
+		preco = recuperarDouble("Informe preço de venda(ex: 5.50): ");
+		console = recuperarString("Informe console..................: ");		
+			
+		if (recuperarBoolean("Esse jogo possui uma DLC(1-sim/2-nao)? ")) {
+			String jogo = "", tituloDlc = "", localizacao = "";
+			
+			jogo = recuperarString("Informe qual jogo possui: ");
+			tituloDlc = recuperarString("Informe o título da DLC.: ");
+			localizacao = recuperarString("Informe a localização...: ");
+			
+			dlc = new Dlc(jogo, tituloDlc, localizacao);
+		}
+		
+		return new JogoDeVideoGame(titulo, "novo", preco, " ", 5, console, false, dlc);	
+	}
+	
+	/**
+	 * Cria um Jogo de tabuleiro como desejo do usuário.
+	 * @return o Jogo com as caracteristicas desejadas
+	 * */
+	private JogoDeTabuleiro jogoTDesejado() {
+		String titulo = "";
+		double preco = 0;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		preco = recuperarDouble("Informe preço de venda(ex: 5.50): ");
+		
+		return new JogoDeTabuleiro(titulo, "novo", preco, " ", 5);
+	}
+	
+	/**
+	 * Cria um DVD/CD como desejo do usuário.
+	 * @return o DVD/CD com as caracteristicas desejadas
+	 * */
+	private DvdCd dvdDesejado() {
+		String titulo = "", marca = "", conteudo = "";
+		double preco = 0;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		preco = recuperarDouble("Informe preço de venda(ex: 5.50): ");
+		marca = recuperarString("Informe marca....................: ");
+		conteudo = recuperarString("Informe conteúdo.................: ");
+		
+		return new DvdCd(titulo, "novo", preco, " ", 5, marca, conteudo, false);
+	}
+	
+	/**
+	 * Cria um HQ como desejo do usuário.
+	 * @return o HQ com as caracteristicas desejadas
+	 * */
+	private Hq hqDesejado() {
+		String titulo = "", editora = "", universo = "";
+		int numero = 0;
+		double preco = 0;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		numero = recuperarInt("Informe número...................: ");
+		editora = recuperarString("Informe editora..................: ");
+		universo = recuperarString("Informe universo.................: ");
+		preco = recuperarDouble("Informe preço de venda(ex: 5.50): ");
+		
+		Hq hq = new Hq(titulo, "novo", preco, " ", 5, numero, editora, universo, false);
+		
+//		if (recuperarBoolean("Informe se pertence a uma saga(1-sim/2-nao)? ")) {	
+//			String nomeSaga = "";
+//			int numSaga;
+//			
+//			nomeSaga = recuperarString("Informe nome....: ");
+//			numSaga = recuperarInt("Informe o número: ");
+//			
+//			saga = new Saga(nomeSaga, numSaga);
+//			
+//			hq.setSaga(saga);
+//		}
+		
+		return hq;
+	}
+}

@@ -1,0 +1,66 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.itemColecionavel.Hq;
+import br.com.gerenciador.colecao.saga.Saga;
+
+public class HqTest {
+
+	Hq hq;
+	
+	@Before
+	public void setUp() throws Exception {
+		hq = new Hq("Action Comics", "usado", 1_000_000, "muito valioso", 5, 1, "Comics", "fantasioso",   
+				true);
+		
+		Saga saga = new Saga("Super herois", 3);
+		saga.adicionarItemNaSaga(hq, 2);
+	}
+
+	@Test
+	public void testHq() {
+		assertEquals("Action Comics", hq.getTitulo());
+		assertEquals(1, hq.getNumero());
+		
+		assertEquals("Comics", hq.getEditora());
+		assertEquals("fantasioso", hq.getUniverso());
+		assertEquals("usado", hq.getEstado());
+		assertEquals(1000000, hq.getPrecoDeCompra(), 0);
+		assertEquals("muito valioso", hq.getObservacoes());
+		assertTrue(hq.isLido());
+		assertTrue(hq.getSaga().equals(new Saga("super herois")));
+		assertEquals(5, hq.getNivelDeImportancia());
+	}
+	
+	@Test
+	public void testEqualsObject() {
+		Hq novoHq = new Hq("Action Comics", "usado", 1_000_000, "muito valioso", 5, 1, "Comics", "fantasioso",
+				true);
+		
+		assertFalse(hq.equals(novoHq));
+		
+		novoHq = new Hq("Action Comics", "usado", 1_000_000, "muito valioso", 5, 1, "Comics", "fantasioso",
+				true);
+		
+		Saga saga = new Saga("Super herois", 3);
+		saga.adicionarItemNaSaga(novoHq, 2);
+		
+		assertTrue(hq.equals(novoHq));	
+	}
+
+	@Test
+	public void testToString() {
+		System.out.println(hq.toString());
+		assertEquals("Titulo = Action Comics, Estado = usado, Preco De Compra = R$ 1000000.0, "
+				+ "Observacoes = muito valioso\nDISPONIVEL, Estrelas: *****;"
+				+ "\nNumero = 1, Editora = Comics, Universo = fantasioso, já foi lido, "
+				+ "Saga: Nome da saga = Super herois, Numero Na Saga = 2", hq.toString());
+	}
+
+}

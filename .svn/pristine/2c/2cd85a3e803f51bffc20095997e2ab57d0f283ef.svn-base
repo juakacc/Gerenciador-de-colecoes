@@ -1,0 +1,375 @@
+package br.com.gerenciador.pesistencia;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import br.com.gerenciador.amizade.*;
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.*;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.Dlc;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.RepositorioDlc;
+import br.com.gerenciador.colecao.itemColecionavel.saga.*;
+import br.com.gerenciador.colecao.serie.*;
+import br.com.gerenciador.colecao.trilogia.*;
+import br.com.gerenciador.desejo.*;
+import br.com.gerenciador.emprestimo.*;
+
+public class Recupera {
+	
+	private Acervo acervo;
+	private MeusAmigos meusAmigos;
+	private RepositorioEmprestimo emprestados;
+	private RepositorioItensDesejados desejos;
+	private RepositorioTrilogia trilogias;
+	private RepositorioSerie series;
+	private RepositorioSaga sagas;
+	
+	/**
+	 * Constrói um objeto para a recuperação do sistema a partir
+	 * dos arquivos que foram salvos com o log da última utilização
+	 * do sistema.
+	 * */
+	public Recupera() {
+		acervo = Acervo.getInstancia();
+		meusAmigos = MeusAmigos.getInstancia();
+		emprestados = RepositorioEmprestimo.getInstancia();
+		desejos = RepositorioItensDesejados.getIntancia();
+		trilogias = RepositorioTrilogia.getInstancia();
+		series = RepositorioSerie.getInstancia();
+		sagas = RepositorioSaga.getInstancia();
+	}
+	
+	/**
+	 * Gerencia a recuperação dos dados do sistema.
+	 * */
+	public void recuperar() {
+		recuperarTrilogias();
+		recuperarSeries();
+		recuperarSagas();
+		recuperarItens();
+		recuperarAmigos();
+		recuparItensEmprestados();
+		recuperarDesejos();
+	}
+	
+	/**
+	 * Método para recuperar os itens disponiveis do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuperarItens() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+								new FileReader("Itens.txt"));
+				
+			String line;
+			while ((line = r.readLine()) != null) {
+				Item item = transformarItens(line);
+				acervo.adicionarItem(item);
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação dos Itens...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperar os amigos cadastrados do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuperarAmigos() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+							new FileReader("Amigos.txt"));
+				
+			String line;
+			while ((line = r.readLine()) != null) {
+				Amigo amigo = transformarAmigo(line);
+				meusAmigos.adicionarAmigo(amigo);
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação dos Amigos...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}	
+	}
+
+	/**
+	 * Método para recuperar os itens emprestados do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuparItensEmprestados() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+					new FileReader("ItensEmprestados.txt"));
+				
+			String line;
+			while ((line = r.readLine()) != null) {
+					
+				Item item = transformarItens(line);
+				Amigo amigo = transformarAmigo(r.readLine());
+				
+				Calendar dataDoEmprestimo = Calendar.getInstance();
+				dataDoEmprestimo.setTimeInMillis(Long.parseLong(r.readLine()));
+					
+				Calendar dataDaEntrega = Calendar.getInstance();
+				dataDaEntrega.setTimeInMillis(Long.parseLong(r.readLine()));
+					
+				List<Amigo> amigos = meusAmigos.todosAmigos();
+					
+				for (Amigo a : amigos) {
+					if (a.equals(amigo)) {
+						amigo = a;
+						break;
+					}
+				}
+				amigo.adicionarItem(item);
+				item.setAmigo(amigo);
+									
+				emprestados.adicionar(new ItemEmprestado(item, amigo, dataDoEmprestimo, dataDaEntrega));
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação dos empréstimos...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperar os itens desejados do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuperarDesejos() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+					new FileReader("desejos.txt"));
+			
+			String line;
+			while ((line = r.readLine()) != null) {
+				Item item = transformarItens(line);
+				
+				line = r.readLine();
+				Calendar c = Calendar.getInstance();
+				c.setTimeInMillis(Long.parseLong(line));
+				
+				line = r.readLine();
+				String url = null;
+				if (!line.equals("")) url = line;
+				
+				ItemDesejado desejo = new ItemDesejado(item, c, url);
+				desejos.adicionarItem(desejo);	
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação da WishList...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperar as trilogias do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuperarTrilogias() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+					new FileReader("trilogias.txt"));
+			
+			String line;
+			StringTokenizer t;
+			while ((line = r.readLine()) != null) {
+				t = new StringTokenizer(line, ";");
+			
+				int tipo = Integer.parseInt(t.nextToken());
+				String nome = t.nextToken();
+				
+				Trilogia trilogia = new Trilogia(nome, tipo);
+				trilogias.adicionarTrilogia(trilogia);
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação de Trilogias...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperar as séries do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	public void recuperarSeries() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+					new FileReader("series.txt"));
+			
+			String line = null;
+			StringTokenizer t;
+			while ((line = r.readLine()) != null) {
+				t = new StringTokenizer(line, ";");
+				
+				int tipo = Integer.parseInt(t.nextToken());
+				String nome = t.nextToken();
+				int quantItens = Integer.parseInt(t.nextToken());
+				
+				Serie serie = new Serie(nome, tipo, quantItens);
+				series.adicionarSerie(serie);
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação de Séries...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperar as sagas do usuário
+	 * da memória para o ambiente de execução.
+	 * */
+	private void recuperarSagas() {
+		
+		BufferedReader r = null;
+		try {
+			r = new BufferedReader(
+					new FileReader("sagas.txt"));
+			
+			String line;
+			StringTokenizer tokenizador;
+			
+			while ((line = r.readLine()) != null) {
+				tokenizador = new StringTokenizer(line, ";");
+				
+				String nome = tokenizador.nextToken();
+				int quantidadeItens = Integer.parseInt(tokenizador.nextToken());
+				
+				Saga saga = new Saga(nome, quantidadeItens);
+				sagas.adicionarSaga(saga);
+			}
+		} catch (Exception e) {
+			System.err.println("Ocorreu um erro na recuperação de Trilogias...");
+		} finally {
+			if (r != null) {
+				try { r.close(); } catch (IOException e) { }
+			}
+		}
+	}
+	
+	/**
+	 * Método para transformar um linha lida do arquivo em um amigo.
+	 * @param line - linha que foi lida do arquivo
+	 * @return O Amigo correspondente as informações que tinham nessa linha.
+	 * */
+	private Amigo transformarAmigo(String line) {
+		
+		StringTokenizer t = new StringTokenizer(line, ";");
+		Amigo amigo;
+		
+		amigo = new Amigo(t.nextToken(), t.nextToken(), t.nextToken(), t.nextToken(), Long.parseLong(t.nextToken()));
+		
+		return amigo;
+	}
+	
+	/**
+	 * Método para transformar um linha lida do arquivo em um item.
+	 * @param line - linha que foi lida do arquivo
+	 * @return O Item correspondente as informações que tinham nessa linha.
+	 * */
+	private Item transformarItens(String line) throws Exception {
+		
+		StringTokenizer t = new StringTokenizer(line, ";");
+		int tipoDoItem = Integer.parseInt(t.nextToken());
+		Item item = null;
+		String next;
+		
+		switch (tipoDoItem) {
+		case 1:			// dvd
+			
+			item = new DvdCd(t.nextToken(), t.nextToken(), Double.parseDouble(t.nextToken()), 
+					t.nextToken(), Integer.parseInt(t.nextToken()), t.nextToken(), t.nextToken(),
+					Boolean.parseBoolean(t.nextToken()));
+			break;
+		case 2:			// hq
+			item = new Hq(t.nextToken(), t.nextToken(), Double.parseDouble(t.nextToken()), t.nextToken(), 
+					Integer.parseInt(t.nextToken()), Integer.parseInt(t.nextToken()), t.nextToken(), 
+					t.nextToken(), Boolean.parseBoolean(t.nextToken()));
+
+			next = t.nextToken();			// nome da saga se pertencer a uma ou NULL caso não pertença
+			
+			if (!next.equalsIgnoreCase("NULL")) {	// pertence a uma Saga
+				Hq hq = (Hq) item;
+				Saga saga = sagas.getSagaPorNome(next);
+				int numero = Integer.parseInt(t.nextToken());
+				saga.adicionarItemNaSaga(hq, numero);
+				item = hq;
+			}
+			break;
+		case 3:			// jogo de tabuleiro
+			
+			item = new JogoDeTabuleiro(t.nextToken(), t.nextToken(), Double.parseDouble(t.nextToken()), 
+					t.nextToken(), Integer.parseInt(t.nextToken()));
+			break;
+		case 4:			// jogo de video game
+			
+			item = new JogoDeVideoGame(t.nextToken(), t.nextToken(), Double.parseDouble(t.nextToken()), 
+					t.nextToken(), Integer.parseInt(t.nextToken()), t.nextToken(), Boolean.parseBoolean(t.nextToken())); 
+			
+			int numeroDeDlc = Integer.parseInt(t.nextToken());
+			if (numeroDeDlc == 0) {		// não utiliza nenhuma DLC
+				
+			} else {		// utiliza alguma DLC
+				String titulo, localizacao;
+				JogoDeVideoGame jogo = (JogoDeVideoGame) item;
+				
+				for (int i = 0; i < numeroDeDlc; i++) {
+					titulo = t.nextToken();
+					localizacao = t.nextToken();
+					Dlc dlc = new Dlc(titulo, localizacao, jogo);
+					RepositorioDlc.getInstancia().adicionarDlc(dlc);
+				}
+				item = jogo;
+			}
+			break;
+		}
+		item.setEmprestado(Integer.parseInt(t.nextToken()));
+	
+		String nome = t.nextToken();		
+		if (!nome.equalsIgnoreCase("NULL")) {		// pertence a uma serie ou a uma trilogia
+			int tipoDeSerie = Integer.parseInt(t.nextToken());
+			if (tipoDeSerie == Seriado.SERIE) {		// serie
+				series.getSerie(nome, tipoDoItem).adicionarItem(item);
+			} else {		// trilogia
+				trilogias.getTrilogia(nome, tipoDoItem).adicionarItem(item);
+			}
+		}
+		return item;
+	}
+
+}

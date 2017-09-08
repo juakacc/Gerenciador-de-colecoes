@@ -1,0 +1,29 @@
+package br.com.gerenciador.exceptions;
+
+/**
+ * Exceção para sinalizar que uma série não existe ou não
+ * foi encontrada, para que não seja necessária a 
+ * verificação se a série que está sendo manipulada é null
+ * ou não.
+ * */
+public class SerieNotFoundException extends Exception {
+
+	private static final long serialVersionUID = 2741859614808938053L;
+
+	/**
+	 * Constrói um nova exceção com a mensagem padrão.
+	 * */
+	public SerieNotFoundException() {
+		super("A série não foi encontrada!");
+	}
+	
+	/**
+	 * Constrói uma nova exceção com uma mensagem 
+	 * de detalhe especificada.
+	 * @param mensagem
+	 * */
+	public SerieNotFoundException(String mensagem) {
+		super(mensagem);
+	}
+
+}

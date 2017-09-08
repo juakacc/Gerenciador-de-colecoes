@@ -1,0 +1,17 @@
+br.com.gerenciador.amizade
+br.com.gerenciador.colecao
+br.com.gerenciador.colecao.itemColecionavel
+br.com.gerenciador.colecao.itemColecionavel.auxiliares
+br.com.gerenciador.colecao.itemColecionavel.dlc
+br.com.gerenciador.colecao.itemColecionavel.saga
+br.com.gerenciador.colecao.ranking
+br.com.gerenciador.colecao.serie
+br.com.gerenciador.colecao.trilogia
+br.com.gerenciador.desejo
+br.com.gerenciador.emprestimo
+br.com.gerenciador.exceptions
+br.com.gerenciador.gerenciamento
+br.com.gerenciador.gerenciamento.auxiliares
+br.com.gerenciador.interfaces
+br.com.gerenciador.pesistencia
+br.com.gerenciador.start

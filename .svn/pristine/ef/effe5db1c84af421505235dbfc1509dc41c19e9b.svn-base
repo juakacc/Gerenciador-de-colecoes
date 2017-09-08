@@ -1,0 +1,303 @@
+package br.com.gerenciador.gerenciamento.auxiliares;
+
+import java.util.Calendar;
+import java.util.Scanner;
+
+/**
+ * Classe para validar as entradas do usuario
+ * */
+public final class Valida {
+	
+	private static Scanner in = new Scanner(System.in);
+
+	/**
+	 * Pergunta, valida e retorna uma string nao vazia da entrada do teclado
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return String nao vazia
+	 * */
+	public static String recuperarString(String pergunta) {
+		String resposta = "";
+		while (resposta.trim().isEmpty() || resposta.contains(";")) {
+			System.out.print(pergunta);
+			resposta = in.nextLine();
+		}
+		return resposta;
+	}
+	
+	/**
+	 * Pergunta, valida e retorna true para 1 ou false para 2
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return boolean correspondente
+	 */
+	public static boolean recuperarBoolean(String pergunta) {
+		int aux;
+		do {
+			try {
+				System.out.print(pergunta);
+				aux = Integer.parseInt(in.nextLine());
+				if (aux == 1 || aux == 2) {
+					break;
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		} while (true);
+		
+		if (aux == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um inteiro valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return inteiro valido
+	 */
+	public static int recuperarInt(String pergunta) {
+		int numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Integer.parseInt(in.nextLine());
+				return Math.abs(numero);
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um long valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return long valido
+	 */
+	public static long recuperarLong(String pergunta) {
+		long numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Long.parseLong(in.nextLine());
+				return numero;
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um inteiro valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return inteiro valido
+	 */
+	public static double recuperarDouble(String pergunta) {
+		double numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Double.parseDouble(in.nextLine());
+				return numero;
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Recupera uma data válida da entrada do usuário
+	 * @return Uma instância de Calendar com uma data válida para o sistema
+	 * */
+	public static Calendar recuperarData(String pergunta) {
+		String entrada;
+		Calendar data;
+		do {
+			entrada = recuperarString(pergunta);
+			
+			if (!entrada.matches("\\d{2}/\\d{2}/\\d{4}")) {
+				System.err.println("Formato inválido... Tente novamente!");
+			} else {
+				String[] valores = entrada.split("/");
+				
+				int date = Integer.parseInt(valores[0]);
+				int month = Integer.parseInt(valores[1]);
+				int year = Integer.parseInt(valores[2]);
+				
+				if (date <= 0 || date > 31 || month <= 0 || month > 12) {
+					System.out.println("Data inválida... Tente novamente!");
+					continue;
+				}
+				if (month == 2) {
+					if (date > 29) {
+						System.out.println("Data inválida... Tente novamente!");
+						continue;
+					}
+				} else if (month == 1 || month == 3 || month == 5 || 
+						month == 7 || month == 8 || month == 10 || month == 12) {
+					if (date > 31) {
+						System.out.println("Data inválida... Tente novamente!");
+						continue;
+					}
+				} else {
+					if (date > 30) {
+						System.out.println("Data inválida... Tente novamente!");
+						continue;
+					}
+				}
+				Calendar dataAtual = Calendar.getInstance();		
+				data = Calendar.getInstance();
+				data.set(year, month-1, date);
+				
+				if (data.compareTo(dataAtual) < 0) {
+					System.out.println("Essa data já passou... Insira outra data!");
+				} else {
+					return data;
+				}
+			}
+		} while (true);
+	}
+	
+	/**
+	 * Recupera uma String podendo ser vazia ou não
+	 * @param pergunta - perguntar sobre o que decidir
+	 * @param vazio - True caso possa ser vazio ou False, caso contário.
+	 * @return Uma String dependendo da escolha do usuário.
+	 * */
+	public static String recuperarString(String pergunta, boolean vazio) {
+		if (!vazio) {
+			return recuperarString(pergunta);
+		} else {
+			String resposta = "";
+			do {
+				System.out.print(pergunta);
+				resposta = in.nextLine();
+			} while (resposta.contains(";"));
+			return resposta;
+		}
+	}
+	
+	/**
+	 * Recupera um inteiro.
+	 * @param pergunta - perguntar sobre o que decidir
+	 * @param vazio - True caso possa ser vazio ou False, caso contário.
+	 * @return Um inteiro válido, caso vazio seja True pode retornar -1
+	 * */
+	public static int recuperarInt(String pergunta, boolean vazio) {
+		if (!vazio) {
+			return recuperarInt(pergunta);
+		} else {
+			int numero;
+			String aux;
+			while (true) {
+				try {
+					System.out.print(pergunta);
+					aux = in.nextLine();
+					if (aux.trim().equals("")) {
+						return -1;
+					} else {
+						numero = Integer.parseInt(aux);
+						return Math.abs(numero);
+					}
+				} catch (NumberFormatException e) {
+					System.err.println("Entrada invalida... Tente novamente!");
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Recupera um Double.
+	 * @param pergunta - perguntar sobre o que decidir
+	 * @param vazio - True caso possa ser vazio ou False, caso contário.
+	 * @return Um double válido, caso vazio seja True pode retornar -1
+	 * */
+	public static double recuperarDouble(String pergunta, boolean vazio) {
+		if (!vazio) {
+			return recuperarDouble(pergunta);
+		} else {
+			double numero;
+			String aux;
+			while (true) {
+				try {
+					System.out.print(pergunta);	
+					aux = in.nextLine();
+					if (aux.trim().equals("")) {
+						return -1;
+					} else {
+						numero = Double.parseDouble(aux);
+						return Math.abs(numero);
+					}
+				} catch (NumberFormatException e) {
+					System.err.println("Entrada invalida... Tente novamente!");
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Recupera um boolean.
+	 * @param pergunta - perguntar sobre o que decidir
+	 * @param vazio - True caso possa ser vazio ou False, caso contário.
+	 * @return Um boolean válido
+	 * @throws Exception caso o usuário digite enter sem escolha de opção
+	 * */
+	public static boolean recuperarBoolean(String pergunta, boolean vazio) throws Exception {
+		if (!vazio) {
+			return recuperarBoolean(pergunta);
+		} else {
+			int aux;
+			String auxS;
+			do {
+				try {
+					System.out.print(pergunta);
+					auxS = in.nextLine();
+					if (auxS.trim().equals("")) {
+						throw new Exception("Manter como está!");
+					} else {
+						aux = Integer.parseInt(auxS);
+						if (aux == 1 || aux == 2) {
+							break;
+						}
+					}
+				} catch (NumberFormatException e) {
+					System.err.println("Entrada invalida... Tente novamente!");
+				}
+			} while (true);
+			
+			if (aux == 1) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	
+	/**
+	 * Recupera um long.
+	 * @param pergunta - perguntar sobre o que decidir
+	 * @param vazio - True caso possa ser vazio ou False, caso contário.
+	 * @return Um long válido, caso vazio seja True pode retornar -1
+	 * */
+	public static long recuperarLong(String pergunta, boolean vazio) {
+		if (!vazio) {
+			return recuperarLong(pergunta);
+		} else {
+			long numero;
+			String aux;
+			while (true) {
+				try {
+					System.out.print(pergunta);	
+					aux = in.nextLine();
+					if (aux.trim().equals("")) {
+						return -1;
+					} else {
+						numero = Long.parseLong(aux);
+						return numero;
+					}
+				} catch (NumberFormatException e) {
+					System.err.println("Entrada invalida... Tente novamente!");
+				}
+			}
+		}
+	}
+}

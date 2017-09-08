@@ -1,0 +1,141 @@
+package br.com.gerenciador.gerenciamento.auxiliares;
+
+import java.util.Calendar;
+import java.util.Scanner;
+
+/**
+ * Classe para validar as entradas do usuario
+ * */
+public final class Valida {
+	
+	private static Scanner in = new Scanner(System.in);
+
+	/**
+	 * Pergunta, valida e retorna uma string nao vazia da entrada do teclado
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return String nao vazia
+	 * */
+	public static String recuperarString(String pergunta) {
+		String resposta = "";
+		while (resposta.trim().isEmpty() || resposta.contains(";")) {
+			System.out.print(pergunta);
+			resposta = in.nextLine();
+		}
+		return resposta;
+	}
+	
+	/**
+	 * Pergunta, valida e retorna true para 1 ou false para 2
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return boolean correspondente
+	 */
+	public static boolean recuperarBoolean(String pergunta) {
+		int aux;
+		while (true) {
+			try {
+				aux = 0;
+				while (aux != 1 && aux != 2) {
+					System.out.print(pergunta);
+					aux = Integer.parseInt(in.nextLine());
+				}
+				break;
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+		if (aux == 1)
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um inteiro valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return inteiro valido
+	 */
+	public static int recuperarInt(String pergunta) {
+		int numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Integer.parseInt(in.nextLine());
+				return Math.abs(numero);
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um long valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return long valido
+	 */
+	public static long recuperarLong(String pergunta) {
+		long numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Long.parseLong(in.nextLine());
+				return numero;
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Pergunta, valida e retorna um inteiro valido
+	 * @param pergunta - sobre o que quer decidir 
+	 * @return inteiro valido
+	 */
+	public static double recuperarDouble(String pergunta) {
+		double numero;
+		while (true) {
+			try {
+				System.out.print(pergunta);	
+				numero = Double.parseDouble(in.nextLine());
+				return numero;
+			} catch (NumberFormatException e) {
+				System.err.println("Entrada invalida... Tente novamente!");
+			}
+		}
+	}
+	
+	/**
+	 * Recupera uma data válida da entrada do usuário
+	 * 
+	 * */
+	public static Calendar recuperarData(String pergunta) {
+		
+		String entrada;
+		Calendar data;
+		
+		while (true) {
+			entrada = recuperarString(pergunta);
+			
+			if (!entrada.matches("\\d{2}/\\d{2}/\\d{4}")) {
+				System.err.println("Formato inválido... Tente novamente!");
+			} else {
+			
+				String[] valores = entrada.split("/");
+				int date = Integer.parseInt(valores[0]);
+				if (date == 0) date = 1;
+				int month = Integer.parseInt(valores[1]);
+				if (month == 0) month = 1;
+				int year = Integer.parseInt(valores[2]);
+				
+				Calendar dataAtual = Calendar.getInstance();		// data atual
+				data = Calendar.getInstance();
+				data.set(year, month-1, date);
+				
+				if (data.compareTo(dataAtual) < 0) {
+					System.out.println("Essa data já passou... Insira outra data!");
+				} else {
+					return data;
+				}
+			}
+		}
+	}
+	
+}

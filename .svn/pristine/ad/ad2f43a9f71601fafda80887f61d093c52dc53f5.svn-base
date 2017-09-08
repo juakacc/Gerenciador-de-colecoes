@@ -1,0 +1,167 @@
+package br.com.gerenciador.colecao.saga;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import br.com.gerenciador.exceptions.SagaNotFoundException;
+
+public class RepositorioSaga {
+	private static RepositorioSaga instancia;
+	
+	public static RepositorioSaga getInstancia() {
+		if (instancia == null) {
+			instancia = new RepositorioSaga();
+		}
+		return instancia;
+	}
+	
+	private static Set<Saga> sagas;
+
+	private RepositorioSaga() {
+		sagas = new HashSet<>();
+	}
+
+	/**
+	 * Adiciona uma saga a coleção de sagas
+	 * @param saga - saga que será adicionada
+	 * @return true se a saga for adicionada, false caso contrário
+	 */	
+	public boolean adicionarSaga(Saga saga) {
+		if (saga == null) {
+			return false;
+		}
+		return sagas.add(saga);
+	}
+	
+	/**
+	 * Remove a saga caso pertença a coleção de sagas
+	 * @param saga - saga que será removida
+	 * @return True caso saga seja removida ou False caso contrário
+	 */	
+	public boolean removerSaga(Saga saga) {
+		return sagas.remove(saga);		
+	}
+	
+	/**
+	 * Remove todas as sagas que estão cadastradas.
+	 * @return True se ocorreu tudo bem ou False caso contrário
+	 * */
+	public boolean removerTodas() {
+		return sagas.removeAll(sagas);
+	}
+	
+	/**
+	 * Recupera uma lista de saga da lista de sagas de 
+	 * acordo com a busca do usuário
+	 * @param nome - nome da saga que esta sendo pesquisada
+	 * @return A lista de saga caso exista pelo menos uma
+	 * @throws SagaNotFoundException - caso não exista a saga
+	 */
+	public List<Saga> getSaga(String nome) throws SagaNotFoundException {
+		List<Saga> sagasAux = new ArrayList<>();
+		
+		for (Saga saga : sagas) {
+			if (nome.equalsIgnoreCase(saga.getNome())) {
+				sagasAux.add(saga);
+			}
+		}
+		if (sagasAux.isEmpty()) {
+			throw new SagaNotFoundException();
+		}
+		return sagasAux;
+	}
+	
+	/**
+	 * Exibe uma saga com um determinado nome.
+	 * @param nome - nome da Saga a ser exibida.
+	 * */
+	public void verSaga(String nome) {
+		List<Saga> lista = null;
+		
+		try {
+			lista = this.getSaga(nome);
+			
+			System.out.println("\n----------------------------");
+			System.out.println("|::: SAGA EM PARTICULAR :::|");
+			System.out.println("----------------------------");
+			for (Saga saga : lista) {
+				System.out.println(saga.toString() + "\n");
+			}
+			System.out.println("----------------------------");
+		} catch (SagaNotFoundException e) {
+			System.out.println("\nNenhuma saga cadastrada com esse nome... :(");
+		}
+	}
+	
+	/**
+	 * Verifica se o repositório de sagas está vazio.
+	 * @return True se vazio ou False caso contrário.
+	 * */
+	public boolean isVazio() {
+		return sagas.isEmpty();
+	}
+	
+	/**
+	 * Verifica se uma saga pertence a lista de sagas do usuário
+	 * @return True se pertence ou False caso contrário.
+	 * */
+	public boolean pertence(Saga saga) {
+		return sagas.contains(saga);
+	}
+	
+	/**
+	 * Recupera todas as sagas cadastradas.
+	 * @return Uma lista com as sagas.
+	 * */
+	public List<Saga> getSagas() {
+		return new ArrayList<>(sagas);
+	}
+	
+	/**
+	 * Exibe as saga na tela para o usuário.
+	 * */
+	public void mostrarSagas() {
+		if (isVazio()) {
+			System.out.println("\nNenhuma saga cadastrada... :(");
+		} else {
+			System.out.println("\n----------------------------");
+			System.out.println("|:::::::::: SAGAS :::::::::|");
+			System.out.println("----------------------------");
+			System.out.println(toString());
+			System.out.println("-----------------------------");
+		}
+	}
+	
+	/**
+	 * Representa o repositório de sagas como String.
+	 * @return A String representante.
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		for (Saga saga : sagas) {
+			str.append("\n" + saga.toString() + "\n");
+		}		
+		return str.toString();		
+	}	
+	
+	/**
+	 * Recupera uma determinada saga pelo seu nome.
+	 * Visto que não é possível ter duas sagas com o mesmo nome.
+	 * (Para uso interno)
+	 * @param nome - nome da saga
+	 * @return A saga
+	 * */
+	public Saga getSagaPorNome(String nome) {
+		for (Saga saga : sagas) {
+			if (nome.equalsIgnoreCase(saga.getNome())) {
+				return saga;
+			}
+		}
+		return null;
+	}
+
+}

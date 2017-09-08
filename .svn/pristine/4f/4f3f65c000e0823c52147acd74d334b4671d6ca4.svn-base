@@ -1,0 +1,140 @@
+package br.com.gerenciador.colecao.itemColecionavel.auxiliares;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+
+/**
+ * Classe para a separação e recuperação dos itens repetidos que o 
+ * usuário tem, auxiliando o mesmo em tarefas, como trocas ou remoções
+ * do acervo.
+ * */
+public final class Repetido {
+	
+	/**
+	 * Recupera os itens repetidos do acervo, juntamente com a sua quantidade
+	 * @param itens - a Lista de itens do usuário.
+	 * @return Um Map contendo o item como chave e a quantidade como valor.
+	 * */
+	public Map<Item, Integer> getRepetidos(List<Item> itens) {
+		
+		Map<Item, Integer> mapaDeQuantidade = new HashMap<>();
+		List<Item> jaForamVerificados = new ArrayList<>();
+		
+		for (int i = 0; i < itens.size(); i++) {
+			Item item = itens.get(i);
+			int cont = 1;	// quantidade desse item
+			
+			if (!jaVerificou(jaForamVerificados, item)) {
+				
+				for (int j = i+1; j < itens.size(); j++) {
+					if (isIguais(item, itens.get(j))) {
+						cont++;
+					}
+				}
+				jaForamVerificados.add(item);
+				mapaDeQuantidade.put(item, cont);
+			}
+		}
+		
+		Map<Item, Integer> repetidos = new HashMap<>();
+		Set<Item> itensAux = mapaDeQuantidade.keySet();
+		
+		for (Item item : itensAux) {			// seleciona os repetidos
+			int quant = mapaDeQuantidade.get(item);
+			if (quant > 1) {
+				repetidos.put(item, quant);
+			}
+		}
+		return repetidos;
+	}
+	
+	/**
+	 * @param lista - lista a ser verificada
+	 * @param item - o item que ser procurado
+	 * @return True se já verificado ou False caso contrário
+	 * */
+	private boolean jaVerificou(List<Item> lista, Item item) {
+		
+		for (Item itemAux : lista) {
+			if (isIguais(item, itemAux)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Verica se os dois itens são iguais, dependendo do seu tipo
+	 * @param item1
+	 * @param item2
+	 * @return True se iguais ou False, caso contrário.
+	 * */
+	private boolean isIguais(Item item1, Item item2) {
+		
+		if (item1.getClass() != item2.getClass()) {
+			return false;
+		}
+		
+		if (item1 instanceof DvdCd && item2 instanceof DvdCd) {
+			return dvdIgual((DvdCd) item1,(DvdCd) item2);	
+			
+		} else if (item1 instanceof Hq && item2 instanceof Hq) {
+			return hqIgual((Hq) item1, (Hq) item2);
+			
+		} else if (item1 instanceof JogoDeVideoGame && item2 instanceof JogoDeVideoGame) {
+			return gameIgual((JogoDeVideoGame) item1, (JogoDeVideoGame) item2);
+			
+		} else if (item1 instanceof JogoDeTabuleiro && item2 instanceof JogoDeTabuleiro) {
+			return itemIgual(item1, item2);
+		} 
+		return false;
+	}
+	
+	/**
+	 * @param dvd1
+	 * @param dvd2
+	 * @return True se os dois itens forem iguais ou Fase caso contrário.
+	 * */
+	private boolean dvdIgual(DvdCd dvd1, DvdCd dvd2) {
+		return itemIgual(dvd1, dvd2) &&
+				dvd1.getMarca().equalsIgnoreCase(dvd2.getMarca()) &&
+				dvd1.getConteudo().equalsIgnoreCase(dvd2.getConteudo());
+	}
+	
+	/**
+	 * @param hq1
+	 * @param hq2
+	 * @return True se os dois itens forem iguais ou Fase caso contrário.
+	 * */
+	private boolean hqIgual(Hq hq1, Hq hq2) {
+		return itemIgual(hq1, hq2) &&
+				hq1.getNumero() == hq2.getNumero() &&
+				hq1.getEditora().equalsIgnoreCase(hq2.getEditora()) &&
+				hq1.getUniverso().equalsIgnoreCase(hq2.getUniverso());
+	}
+	
+	/**
+	 * @param jogo1
+	 * @param jogo2
+	 * @return True se os dois itens forem iguais ou Fase caso contrário.
+	 * */
+	private boolean gameIgual(JogoDeVideoGame jogo1, JogoDeVideoGame jogo2) {
+		return itemIgual(jogo1, jogo2) &&
+				jogo1.getConsole().equalsIgnoreCase(jogo2.getConsole());
+	}
+	
+	/**
+	 * @param i1 - Item1
+	 * @param i2 - Item2
+	 * @return True se os dois itens forem iguais ou Fase caso contrário.
+	 * */
+	private boolean itemIgual(Item i1, Item i2) {
+		return i1.getTitulo().equalsIgnoreCase(i2.getTitulo());
+	}
+}

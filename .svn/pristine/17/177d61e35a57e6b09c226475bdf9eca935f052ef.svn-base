@@ -1,0 +1,143 @@
+package br.com.gerenciador.colecao.trilogia;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.gerenciamento.FabricaItem;
+
+/**
+ * Classe para representar uma trilogia do usuário, 
+ * Uma série é constituida por itens do mesmo tipo 
+ * que tenham alguma relação, com 3 itens.
+ * */
+public class Trilogia extends Seriado {
+	
+	/**
+	 * Constrói uma trilogia a partir do nome e do tipo de item
+	 * (para efeito de comparação com outras trilogias)
+	 * @param nome - nome da trilogia
+	 * @param tipo - tipo dos itens da trilogia
+	 * */
+	public Trilogia(String nome, int tipo) {
+		super(nome, tipo);
+	}
+	
+	/**
+	 * Adiciona um item a trilogia, se possível
+	 * @param item - item que será adicionado
+	 * @return - true caso o item tenha sido adicionado, false caso contrario
+	 */	
+	public boolean adicionarItem(Item item) {
+		if (item == null) {
+			return false;
+		}
+		if (getTipo() != FabricaItem.tipoItem(item)) {
+			System.out.println("Tipo incompatível com o da trilogia...");
+			return false;
+		}
+		if (item.getSeriado() != null) {
+			System.out.println("Esse item já pertence a uma SERIE, remova-o "
+					+ "primeiro antes de cadastrar em uma nova!");
+			return false;
+		}
+		if (itens.size() < 3) {
+			if (itens.add(item)) {
+				item.setSeriado(this);
+				return true;
+			}
+		} else {
+			System.out.println("Item não pode ser adicionado, número limite alcançado!");
+		}
+		return false;
+	}
+	
+	/**
+	 * Edita um item caso ele pertença a essa trilogia.
+	 * @param novo - novo item.
+	 * @param antigo - antigo item.
+	 * @return True se for editado com sucesso ou False caso contrário
+	 * */
+	public boolean editarItem(Item novo, Item antigo) {
+		if (itens.remove(antigo)) {
+			antigo.setSeriado(null);
+			if (adicionarItem(novo)) {
+				novo.setSeriado(this);
+				return true;
+			} else {
+				itens.add(antigo);
+				antigo.setSeriado(this);
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove um item da trilogia
+	 * @param item - item que será removido
+	 * @return - true quando o item for removido, false caso contrario
+	 */	
+	public boolean removerItem(Item item) {
+		
+		if (itens.size() == 1) { // ultimo item na trilogia
+			if (itens.remove(item)) {
+				RepositorioTrilogia.getInstancia().removerTrilogia(this);	
+				item.setSeriado(null);
+				return true;
+			}
+		} else {	// existe mais de 1 item nessa trilogia
+			if (itens.remove(item)) {
+				item.setSeriado(null);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Representa uma trilogia como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		str.append("-> Trilogia: " + getNome() + "\n");
+		
+		for (Item item : itens) {
+			str.append(item.toString() + "\n");
+		}
+		if (itens.size() < 3) {
+			str.append("\nFalta " + (3 - totalCadastrados()) + 
+					" itens para completar a Trilogia!");
+		} else {
+			str.append("\nTrilogia completa! :D");
+		}
+		return str.toString();
+	}
+	
+	/**
+	* Testa a igualdade de um objeto com essa trilogia. 
+	* Duas trilogias são iguais se eles possuem o mesmo nome e tipo.
+	* @param obj - O objeto a comparar com essa trilogia.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Trilogia))
+			return false;
+		
+		Trilogia outra = (Trilogia) obj;
+		return super.equals(outra);
+	}
+	
+	/**
+	 * @return O código de Hash para a Trilogia.
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + "trilogia".hashCode();
+		return result;
+	}
+	
+}

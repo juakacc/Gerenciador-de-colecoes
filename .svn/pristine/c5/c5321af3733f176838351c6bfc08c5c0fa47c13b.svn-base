@@ -1,0 +1,142 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Dlc;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.colecao.serie.Serie;
+
+/**
+ * Esta classe eh usada para representar um jogo de video game
+ * */
+public class JogoDeVideoGame extends Item {
+
+	private String console;
+	private boolean zerado;	
+	private Dlc dlc;
+	
+	/**
+	 * Constroi um jogo de video game e atribui os valores informados como parametro
+	 * @param titulo - titulo do jogo
+	 * @param estado - estado em que o jogo se encontra
+	 * @param preco - preco de compra do jogo
+	 * @param observacoes - alguma observação sobre o jogo caso exista
+	 * @param nivel - nivel de importancia para o usuario
+	 * @param console - console do jogo
+	 * @param zerado - se o jogo ja foi finalizado
+	 * @param dlc - dlc caso o jogo possua, null caso contrário
+	 * */
+	public JogoDeVideoGame(String titulo, String estado, double preco, 
+			String observacoes, int nivel, String console, boolean zerado, Dlc dlc) {
+		
+		super(titulo, estado, preco, observacoes, nivel);
+		this.console = console;
+		this.zerado = zerado;
+		this.dlc = dlc;
+	}
+
+	/**
+	 * Retorna um valor de código de hash para o Jogo de video game
+	 * @return O código de hash
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((console == null) ? 0 : console.hashCode());
+		result = prime * result + ((dlc == null) ? 0 : dlc.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este item. Os dois 
+	* são iguais se eles possuem o mesmo titulo, estado, console e DLC.
+	* @param obj - O objeto a comparar com este itme.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof JogoDeVideoGame))
+			return false;
+		
+		JogoDeVideoGame outro = (JogoDeVideoGame) obj;
+		
+		if ((this.getDlc() != null && outro.getDlc() == null) 
+				|| (this.getDlc() == null && outro.getDlc() != null))
+			return false;				
+		
+		if (this.getDlc() != null && outro.getDlc() != null) {
+			return super.equals(outro) &&
+					this.getConsole().equalsIgnoreCase(outro.getConsole()) &&
+					this.getDlc().equals(outro.getDlc());
+			
+		} else {			
+			return super.equals(outro) &&
+					this.getConsole().equalsIgnoreCase(outro.getConsole());
+		}
+	}
+
+	/**
+	 * Representa um Jogo de Video Game como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(super.toString());
+		s.append("\nConsole = " + getConsole());
+		
+		s.append(isZerado() ? ", já foi finalizado" : ", ainda não finalizado");
+		
+		s.append(dlc != null ? ", DLC = " + dlc.toString() : ", não utiliza DLC");
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append("4;");
+		s.append(super.imprimirParaArquivo() + ";");
+		s.append(getConsole() + ";");
+		s.append(isZerado() + ";");
+		s.append((dlc != null ? dlc.imprimirEmArquivo() : "NULL"));
+		s.append(";" + getVezesEmprestado() + ";");
+		Seriado serie = getSerie();
+		s.append(serie == null ? "NULL" : serie.getNome() + ";" + ((serie instanceof Serie) ? 1 : 2));
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna o console ao que o jogo pertence
+	 * @return String console
+	 * */
+	public String getConsole() {
+		return console;
+	}
+
+	/**
+	 * Retorna o estado de finalizacao do jogo
+	 * @return true se o jogo ja foi zerado ou false caso contrario
+	 * */
+	public boolean isZerado() {
+		return zerado;
+	}
+	
+	/**
+	 * Retorna a DLC do jogo
+	 * @return Dlc do jogo se tiver uma ou null caso contrario
+	 * */
+	public Dlc getDlc() {
+		return dlc;
+	}
+
+}

@@ -1,0 +1,44 @@
+package br.com.gerenciador.colecao.itemColecionavel.auxiliar;
+
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeVideoGame;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.Dlc;
+
+public class DlcTest {
+	
+	Dlc d;
+
+	@Before
+	public void setUp() throws Exception {
+		d = new Dlc("Close Quarters", "internet", new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", true));
+	}
+
+	@Test
+	public void testDlc() {
+		
+		assertNotNull(d);
+		assertEquals("Battlefield 3", d.getJogo());
+		assertEquals("Close Quarters", d.getTitulo());
+		assertEquals("internet", d.getLocalizacao());
+	}
+
+	@Test
+	public void testToString() {
+		
+		assertTrue("Jogo que possui = Battlefield 3, Titulo = Close Quarters, Localizacao = internet".equals(d.toString()));
+		
+	}
+
+	@Test
+	public void testEqualsObject() {
+		Dlc nova = new Dlc("Close Quarters", "internet", new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", true));
+		
+		assertTrue(d.equals(nova));
+		
+	}
+
+}

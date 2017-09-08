@@ -1,0 +1,160 @@
+package br.com.gerenciador.desejo;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.exceptions.ItemNotFoundException;
+
+/**
+ * Repositório de Itens Desejados pelo usuário.
+ * Armazena todos os desejos.
+ * 
+ * Utiliza Singleton para controlar o número de 
+ * instâncias dessa classe no sistema.
+ * */
+public class RepositorioItensDesejados {
+	
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static RepositorioItensDesejados instancia = null;
+	
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static RepositorioItensDesejados getIntancia() {
+		if (instancia == null) {
+			instancia = new RepositorioItensDesejados();
+		}
+		return instancia;
+	}
+	
+	/**
+	 * Lista de desejos do usuário
+	 * */
+	private Set<ItemDesejado> desejos;
+	
+	/**
+	 * Constrói um Repositório de Itens desejados e
+	 * inicializa a lista para armazenamento.
+	 * */
+	private RepositorioItensDesejados() {
+		desejos = new HashSet<ItemDesejado>();
+	}
+	
+	/**
+	 * Adiciona um item de desejo a WishList.
+	 * @param item - item desejado pelo usuário.
+	 * @return True se adicionado com sucesso ou False caso contrário.
+	 * */
+	public boolean adicionarItem(ItemDesejado item) {
+		if (item == null) {
+			return false;
+		}
+		return desejos.add(item);
+	}
+	
+	/**
+	 * Remove um item de desejo da WishList.
+	 * @param item - item a ser removido
+	 * @return True se removido com sucesso ou False caso contrário.
+	 * */
+	public boolean removerItem(Item item) {
+		return desejos.remove(new ItemDesejado(item, null, null));
+	}
+
+	/**
+	 * Representa a WishList em forma de String.
+	 * @return A String correspondente.
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		for (ItemDesejado itemDesejado : desejos) {
+			s.append("\n" + itemDesejado.toString() + "\n");
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Recupera uma Lista de itens desejados que tenham o mesmo título
+	 * @param título - titulo a ser pesquisado.
+	 * @return Lista contendo os itens caso exista ao menos um.
+	 * @throws ItemNotFoundException caso não exista nenhum item com esse título.
+	 * */
+	public List<ItemDesejado> getItem(String titulo) throws ItemNotFoundException {
+		List<ItemDesejado> itens = new ArrayList<>();
+		
+		for (ItemDesejado item : desejos) {
+			if (titulo.equalsIgnoreCase(item.getItem().getTitulo())) {
+				itens.add(item);
+			}
+		}
+		if (itens.isEmpty()) {
+			throw new ItemNotFoundException("Item não existente na WishList!");
+		}
+		return itens;
+	}
+	
+	/**
+	 * Recupera um item desejado (item, data de lançamento, URL) de acordo
+	 * com o item passado como parâmetro.
+	 * @param item - item a ser pesquisado.
+	 * @return Um ItemDesejado caso exista
+	 * @throws ItemNotFoundException Caso não exista esse item na WishList
+	 * */
+	public ItemDesejado getItemDesejado(Item item) throws ItemNotFoundException {
+		
+		for (ItemDesejado it : desejos) {
+			if (item.equals(it.getItem())) {
+				return it;
+			}
+		}
+		throw new ItemNotFoundException("Item não existente na WishList!");
+	}
+	
+	/**
+	 * Recupera todos os itens desejados pelo usuário.
+	 * @return Lista contendo os itens
+	 * */
+	public List<ItemDesejado> getDesejos() {
+		return new ArrayList<>(desejos);
+	}
+	
+	/**
+	 * @return O total de itens que estão cadastrados na WishList
+	 * */
+	public int total() {
+		return desejos.size();
+	}
+	
+	/**
+	 * Verifica se a WishList está vazia.
+	 * @return True se vazia ou False, caso contrário.
+	 * */
+	public boolean isVazio() {
+		return desejos.isEmpty();
+	}
+	
+	/**
+	 * Exibe na tela a WishList do usuário.
+	 * */
+	public void verWishList() {
+		if (desejos.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado na sua WishList... :(");
+		} else {
+			System.out.println("\n----------------------");
+			System.out.println("|::::: WISHLIST :::::|");
+			System.out.println("----------------------");
+			System.out.println(toString());
+			System.out.println("----------------------");
+		}
+	}
+}

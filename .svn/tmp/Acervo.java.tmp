@@ -1,0 +1,483 @@
+package br.com.gerenciador.colecao;
+
+import java.util.*;
+
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.*;
+import br.com.gerenciador.colecao.itemColecionavel.saga.Saga;
+import br.com.gerenciador.colecao.ranking.*;
+import br.com.gerenciador.emprestimo.RepositorioEmprestimo;
+import br.com.gerenciador.exceptions.ItemNotFoundException;
+
+/**
+ * Esta classe gerencia o CRUD de itens do usuario
+ * 
+ * Utiliza Singleton para controlar o número de 
+ * instâncias dessa classe no sistema.
+ * */
+public class Acervo {
+	
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static Acervo instancia = null;
+	
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static Acervo getInstancia() {
+		if (instancia == null) {
+			instancia = new Acervo();
+		}
+		return instancia;
+	}
+
+	/**
+	 * Lista de itens do usuário.
+	 * */
+	private List<Item> colecao;
+	private RepositorioEmprestimo emprestados;
+	
+	/**
+	 * Constrói um Repositório de Itens e
+	 * inicializa a lista para armazenamento.
+	 * */
+	private Acervo() {
+		colecao = new ArrayList<Item>();
+		emprestados = RepositorioEmprestimo.getInstancia();
+	}
+	
+	/**
+	 * Adiciona um item a coleção
+	 * @param item - item a ser adicionado
+	 * @return true se o item foi adicionado ou false caso contrário
+	 * */
+	public boolean adicionarItem(Item item) {
+		if (item == null) {
+			return false;
+		}
+		return 	colecao.add(item);
+	}
+	
+	/**
+	 * Remove o item caso o mesmo pertença a coleção
+	 * @param item - item que será excluido da coleção
+	 * @return True se o item foi removido ou False caso contrário
+	 * */
+	public boolean removerItem(Item item) {
+
+		if (colecao.remove(item)) {
+			Seriado atual = item.getSeriado();
+			if (atual != null) {
+				atual.removerItem(item);
+			}
+			if (item instanceof Hq) {
+				Hq hq = (Hq) item;
+				Saga saga = hq.getSaga();
+				if (saga != null) {
+					saga.removerItemSaga(hq);
+				}
+			} else
+			if (item instanceof JogoDeVideoGame) {
+				JogoDeVideoGame jogo = (JogoDeVideoGame) item;
+				List<Dlc> dlcs = jogo.getDlcs();
+				for (Dlc dlc : dlcs) {
+					RepositorioDlc.getInstancia().removerDlc(dlc);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public void mudarParaEmprestimo(Item item) {
+		colecao.remove(item);
+	}
+	
+	/**
+	 * Remove todos os itens disponíveis da coleção do usuário
+	 * @return True se removeu com sucesso ou False caso contrário.
+	 * */
+	public boolean removerTodos() {
+		List<Item> itens = new ArrayList<>(getItensDisponiveis());
+		
+		for (Item item : itens) {
+			if (!removerItem(item)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Representa o acervo de itens como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		List<Item> aux = getTodosOsItens();
+		StringBuilder s = new StringBuilder();
+		
+		for (Item item : aux) {
+			s.append(item.toString() + "\n");
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Imprime as especificações de um item em particular de 
+	 * acordo com o titulo informado 
+	 * @param titulo - titulo do item a ser impresso.
+	 * */
+	public void verItem(String titulo) {
+		List<Item> itens = new ArrayList<>();
+		
+		try {
+			itens.addAll(getItemDisponivel(titulo));
+		} catch (ItemNotFoundException e) {}
+		try {
+			itens.addAll(emprestados.getItem(titulo));
+		} catch (ItemNotFoundException e) {}
+		
+		if (itens.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado com esse nome... :(");
+		} else {
+			System.out.println("\n--------------------------------");
+			System.out.println("|::::: ITEM EM PARTICULAR :::::|");
+			System.out.println("--------------------------------\n");
+			for (Item item : itens) {
+				if (titulo.equalsIgnoreCase(item.getTitulo())) {
+					System.out.println(item.toString() + "\n");
+				}
+			}
+			System.out.println("---------------------------------");
+		}
+	}
+	
+	/**
+	 * Exibe a lista de itens desde o mais emprestado até o menos emprestado
+	 * */
+	public void verPorMaisEmprestado() {
+		List<Item> todos = getTodosOsItens();
+		
+		if (todos.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado... :(");
+		} else {
+			OrdenaPorMaisEmprestados ordenador = new OrdenaPorMaisEmprestados();
+			List<Item> todosOrdenado = ordenador.ordenarPorMaisEmprestados(todos);
+			
+			System.out.println("\n-------------------------------------------");
+			System.out.println("|:::::: RANKING DE MAIS EMPRESTADOS ::::::|");
+			System.out.println("-------------------------------------------\n");
+			
+			for (Item item : todosOrdenado) {
+				System.out.println(item.toString() + 
+						"\nNúmero de vezes emprestado: " + item.getVezesEmprestado() + "\n");
+			}
+			System.out.println("-------------------------------------------");
+		}
+	}
+	
+	/**
+	 * Exibe a lista de itens desde o mais importante até o menos importante
+	 * */
+	public void verPorMaisImportante() {
+		List<Item> todos = getTodosOsItens();
+		
+		if (todos.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado... :(");
+		} else {
+			OrdenaPorNivelDeImportancia ordenador = new OrdenaPorNivelDeImportancia();
+			List<Item> todosOrdenados = ordenador.ordenarPorMaisImportantes(todos);
+			
+			System.out.println("\n-------------------------------------------");
+			System.out.println("|:::::: RANKING DE MAIS IMPORTANTES ::::::|");
+			System.out.println("-------------------------------------------\n");
+			for (Item item : todosOrdenados) {
+				System.out.println(item.toString() + "\n");
+			}
+			System.out.println("-------------------------------------------");
+		}
+	}
+	
+	/**
+	 * Exibe a lista de itens separados por categorias
+	 * */
+	public void verPorCategoria() {
+		
+		List<Item> aux = getTodosOsItens();
+				
+		if (aux.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado... :(");
+		} else {
+			System.out.println("\n------------------------------------");
+			System.out.println("|::::: LISTAGEM POR CATEGORIA :::::|");
+			System.out.println("------------------------------------\n");
+			
+			System.out.println("----------------------------");
+			System.out.println("|::::::::::: HQ :::::::::::|");
+			System.out.println("----------------------------\n");
+			
+			for (Item item : aux) {
+				if (item instanceof Hq) {
+					Hq hq = (Hq) item;
+					System.out.println(hq.toString() + "\n");
+				}
+			}
+			
+			System.out.println("----------------------------");
+			System.out.println("|::::::::: DVD/CD :::::::::|");
+			System.out.println("----------------------------\n");
+			
+			for (Item item : aux) {
+				if (item instanceof DvdCd) {
+					DvdCd cd = (DvdCd) item;
+					System.out.println(cd.toString() + "\n");
+				}
+			}
+			
+			System.out.println("---------------------------");
+			System.out.println("|::: Jogo de videoGame :::|");
+			System.out.println("---------------------------\n");
+		
+			for (Item item : aux) {
+				if (item instanceof JogoDeVideoGame) {
+					JogoDeVideoGame jogo = (JogoDeVideoGame) item;
+					System.out.println(jogo.toString() + "\n");
+				}
+			}
+			
+			System.out.println("---------------------------");
+			System.out.println("|::: Jogo de Tabuleiro :::|");
+			System.out.println("---------------------------\n");
+			
+			for (Item item : aux) {
+				if (item instanceof JogoDeTabuleiro) {
+					JogoDeTabuleiro jogo = (JogoDeTabuleiro) item;
+					System.out.println(jogo.toString() + "\n");
+				}
+			}
+			System.out.println("------------------------------------");
+		}
+	}
+	
+	/**
+	 * Imprime os elementos do acervo que se repetem juntamente
+	 * com a sua quantidade.
+	 * */
+	public void veritensRepetidos() {
+		List<Item> todos = getTodosOsItens();
+				
+		Map<Item, Integer> mapaQuantidade = new HashMap<>();
+		Map<Item, Integer> repetidos = new HashMap<>();
+		Set<Item> itens;
+		
+		if (todos.isEmpty()) {
+			System.out.println("\nNenhum item cadastrado... :(");
+			return;
+		}
+		
+		for (Item item : todos) {		// contagem de cada item
+			if (mapaQuantidade.containsKey(item)) {
+				int quant = mapaQuantidade.get(item);
+				mapaQuantidade.put(item, quant + 1);
+			} else {
+				mapaQuantidade.put(item, 1);
+			}
+		}
+		
+		itens = mapaQuantidade.keySet();
+		for (Item item : itens) {	// seleciona os repetidos
+			int quant = mapaQuantidade.get(item);
+			if (quant > 1) {
+				repetidos.put(item, quant);
+			}
+		}
+		
+		itens = repetidos.keySet();
+		if (itens.isEmpty()) {
+			System.out.println("\nNenhum item repetido...");
+		} else {
+			System.out.println("\n------------------------------------");
+			System.out.println("|:::::::: ITENS REPETIDOS :::::::::|");
+			System.out.println("------------------------------------\n");
+			System.out.println("QUANT. --------> Item");
+			for (Item item : itens) {
+				int quant = mapaQuantidade.get(item);
+				System.out.println("[ " + quant + " ] - " + item.getTitulo());
+			}
+			System.out.println("------------------------------------");
+		}
+	}
+	
+	/**
+	 * Retorna o total de itens contidos no acervo do usuário
+	 * @return Total de itens
+	 * */
+	public int totalDeItens() {
+		return colecao.size() + emprestados.totalDeItens();
+	}
+	
+	public boolean disponiveisIsVazio() {
+		return colecao.isEmpty();
+	}
+	
+	/**
+	 * Método para verificação se o acervo contem o item passado como parâmetro.
+	 * @return True caso pertença ou False caso contrário.
+	 * */
+	public boolean pertence(Item item) {
+		List<Item> itens = getTodosOsItens();
+		return itens.contains(item);
+	}
+	
+	/**
+	 * Recupera uma lista de itens do acervo, disponiveis, 
+	 * visto que o usuario pode ter itens repetidos.
+	 * @param titulo - titulo do item que será pesquisado
+	 * @return A lista de itens caso exista pelo menos um.
+	 * @throws ItemNotFoundException - caso não exista nenhum item que atenda os requisitos.
+	 * */
+	public List<Item> getItemDisponivel(String titulo) throws ItemNotFoundException {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item: colecao) {
+			if (titulo.equalsIgnoreCase(item.getTitulo())) {
+				itens.add(item);
+			}
+		}
+		if (itens.isEmpty()) {
+			throw new ItemNotFoundException();
+		} 
+		return itens;
+	}
+	
+	/**
+	 * Recupera uma lista de itens do acervo, disponiveis e indisponíveis, 
+	 * visto que o usuario pode ter itens repetidos.
+	 * @param titulo - titulo do item que será pesquisado
+	 * @return A lista de itens caso exista pelo menos um.
+	 * @throws ItemNotFoundException - caso não exista nenhum item que atenda os requisitos.
+	 * */
+	public List<Item> getItemAll(String titulo) throws ItemNotFoundException {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item: colecao) {
+			if (titulo.equalsIgnoreCase(item.getTitulo())) {
+				itens.add(item);
+			}
+		}
+		for (Item item : emprestados.getItensEmprestados()) {
+			if (titulo.equalsIgnoreCase(item.getTitulo())) {
+				itens.add(item);
+			}
+		}
+		if (itens.isEmpty()) {
+			throw new ItemNotFoundException();
+		} 
+		return itens;
+	}
+	
+	/**
+	 * Recupera os itens disponíveis
+	 * @return Uma lista contendo os itens.
+	 * */
+	public List<Item> getItensDisponiveis() {
+		return colecao;
+	}
+	
+	/**
+	 * Recupera todos os itens do usuário, disponíveis e indisponíveis.
+	 * @return List contendo os itens.
+	 * */
+	public List<Item> getTodosOsItens() {
+		List<Item> itens = new ArrayList<>(colecao);
+		itens.addAll(emprestados.getItensEmprestados());
+		return itens;
+	}
+	
+	/**
+	 * Método para obtenção de todos os jogos de tabuleiro contidos no acervo
+	 * @return Uma lista de itens(Jogos de tabuleiro) 
+	 * */
+	public List<Item> jogoDeTabuleiroList() {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item : colecao) {
+			if (item instanceof JogoDeTabuleiro) {
+				itens.add(item);
+			}
+		}
+		for (Item item : emprestados.getItensEmprestados()) {
+			if (item instanceof JogoDeTabuleiro) {
+				itens.add(item);
+			}
+		}
+		return itens;
+	}
+	
+	/**
+	 * Método para obtenção de todos os DVDs/Cds contidos no acervo
+	 * @return Uma lista de itens(DVD's e CD's) 
+	 * */
+	public List<Item> dvdCdList() {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item : colecao) {
+			if (item instanceof DvdCd) {
+				itens.add(item);
+			}
+		}
+		for (Item item : emprestados.getItensEmprestados()) {
+			if (item instanceof DvdCd) {
+				itens.add(item);
+			}
+		}
+		return itens;
+	}
+	
+	/**
+	 * Método para obtenção de todos os HQs contidos no acervo
+	 * @return Uma lista de itens(HQs) 
+	 * */
+	public List<Item> hqList() {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item : colecao) {
+			if (item instanceof Hq) {
+				itens.add(item);
+			}
+		}
+		for (Item item : emprestados.getItensEmprestados()) {
+			if (item instanceof Hq) {
+				itens.add(item);
+			}
+		}
+		return itens;
+	}
+	
+	/**
+	 * Método para obtenção de todos os jogos de videoGame contidos no acervo
+	 * @return Uma lista de itens(Jogos) 
+	 * */
+	public List<Item> jogoDeVideoGameList() {
+		List<Item> itens = new ArrayList<>();
+		
+		for (Item item : colecao) {
+			if (item instanceof JogoDeVideoGame) {
+				itens.add(item);
+			}
+		}
+		for (Item item : emprestados.getItensEmprestados()) {
+			if (item instanceof JogoDeVideoGame) {
+				itens.add(item);
+			}
+		}
+		return itens;
+	}
+
+}

@@ -1,0 +1,58 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeVideoGame;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.Dlc;
+
+public class JogoDeVideoGameTest {
+
+	JogoDeVideoGame jogo;
+	
+	@Before
+	public void setUp() throws Exception {
+		jogo = new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", true);
+	}
+
+	@Test
+	public void testEqualsObject() {
+		JogoDeVideoGame jogo2 = new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", 
+				true);
+		jogo2.adicionarDlc(new Dlc("multiplayer", "disco", jogo2));
+		
+		assertFalse(jogo.equals(jogo2));
+		
+		jogo2 = new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", true);
+		assertTrue(jogo.equals(jogo2));
+	}
+
+	@Test
+	public void testToString() {
+		assertEquals("Titulo = nfsu2, Estado = novo, Preco De Compra = R$ 30.0, "
+				+ "Observacoes = lancamento\nDISPONIVEL, Estrelas: *****;\n"
+				+ "Console = ps3, já foi finalizado, não utiliza DLC", jogo.toString());
+	}
+
+	@Test
+	public void testJogoDeVideoGame() {
+		
+		assertNotNull(jogo);
+		assertEquals("nfsu2", jogo.getTitulo());
+		assertEquals("novo", jogo.getEstado());
+		
+		assertEquals(30, jogo.getPrecoDeCompra(), 0);
+		assertEquals("lancamento", jogo.getObservacoes());
+		assertEquals("ps3", jogo.getConsole());
+		assertTrue(jogo.isZerado());
+		
+		assertEquals(5, jogo.getNivelDeImportancia());
+		
+	}
+
+}

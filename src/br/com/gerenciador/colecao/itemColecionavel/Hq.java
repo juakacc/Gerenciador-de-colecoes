@@ -1,0 +1,212 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.colecao.itemColecionavel.saga.Saga;
+import br.com.gerenciador.colecao.serie.Serie;
+
+/**
+ * Esta classe representa um HQ
+ * */
+public class Hq extends Item {
+
+	private int numero;
+	private String editora;
+	private String universo;	
+	private boolean lido;		
+	private Saga saga;
+
+	/**
+	 * Constroi um HQ e atribui os valores informados como parametro
+	 * @param titulo - titulo do item
+	 * @param estado - estado em que o item se encontra
+	 * @param preco - preco de compra do item
+	 * @param observacoes - alguma observação sobre o item caso exista
+	 * @param nivel - nivel de importancia para o usuario
+	 * @param numero - numero do item
+	 * @param editora - editora do item
+	 * @param universo - universo ao que o item pertence
+	 * @param lido - se o item ja foi lido ou nao
+	 * */
+	public Hq(String titulo, String estado, double preco, String observacoes, 
+			int nivel, int numero, String editora, String universo,
+			boolean lido) {
+		
+		super(titulo, estado, preco, observacoes, nivel);
+		this.numero = numero;
+		this.editora = editora;
+		this.universo = universo;
+		this.lido = lido;
+		this.saga = null;
+	}
+	
+	/**
+	 * @return o código de hash de um HQ
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((editora == null) ? 0 : editora.hashCode());
+		result = prime * result + (lido ? 1231 : 1237);
+		result = prime * result + numero;
+		result = prime * result + ((saga == null) ? 0 : saga.hashCode());
+		result = prime * result
+				+ ((universo == null) ? 0 : universo.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este HQ. 
+	* @param obj - O objeto a comparar com este itme.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof Hq)) {
+			return false;
+		}
+		Hq other = (Hq) obj;
+//		boolean result = super.equals(other) &&
+//				getEditora().equalsIgnoreCase(other.getEditora()) &&
+//				getNumero() == other.getNumero() &&
+//				getUniverso().equalsIgnoreCase(other.getUniverso()) &&
+//				isLido() == other.isLido();
+//		
+//		if (getSaga() == null) {
+//			if (other.getSaga() == null) {
+//				result = result && true;
+//			} else {
+//				result = false;
+//			}
+//		} else {
+//			result = result && getSaga().equals(other.getSaga());
+//		}
+//		return result;
+		return this.hashCode() == other.hashCode();
+	}
+	
+	/**
+	 * Representa um HQ como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(super.toString());
+		s.append("\nNumero = " + getNumero());
+		s.append(", Editora = " + getEditora());
+		s.append(", Universo = " + getUniverso());
+		
+		s.append(isLido() ? ", já foi lido, " : ", ainda não foi lido, ");
+		
+		s.append(saga != null ? 
+				"Saga: " + saga.getNome() + 
+				", Numero Na Saga: " + saga.getNumero(this) 
+				: "não pertence a uma saga.");
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append("2;");
+		s.append(super.imprimirParaArquivo() + ";");
+		s.append(getNumero() + ";");
+		s.append(getEditora() + ";");
+		s.append(getUniverso() + ";");
+		s.append(isLido() + ";");
+		s.append(saga != null ? saga.getNome() + ";" + saga.getNumero(this) : "NULL");
+		s.append(";" + getVezesEmprestado() + ";");
+		
+		Seriado serie = getSeriado();
+		s.append(serie == null ? "NULL" : serie.getNome() + ";" + ((serie instanceof Serie) ? 1 : 2));
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna o numero do HQ
+	 * @return int numero
+	 * */
+	public int getNumero() {
+		return numero;
+	}
+	
+	/**
+	 * @param numero the numero to set
+	 */
+	public void setNumero(int numero) {
+		this.numero = numero;
+	}
+
+	/**
+	 * @param lido the lido to set
+	 */
+	public void setLido(boolean lido) {
+		this.lido = lido;
+	}
+	/**
+	 * Retorna a editora do HQ
+	 * @return String editora
+	 * */
+	public String getEditora() {
+		return editora;
+	}
+	
+	/**
+	 * @param editora the editora to set
+	 */
+	public void setEditora(String editora) {
+		this.editora = editora;
+	}
+
+	/**
+	 * Retorna o universo do HQ
+	 * @return String universo
+	 * */
+	public String getUniverso() {
+		return universo;
+	}
+	
+	/**
+	 * @param universo the universo to set
+	 */
+	public void setUniverso(String universo) {
+		this.universo = universo;
+	}
+	
+	/**
+	 * Retorna true se o HQ ja foi lido ou false caso contrario
+	 * @return boolean - lido
+	 * */
+	public boolean isLido() {
+		return lido;
+	}
+
+	/**
+	 * Retorna a saga do HQ
+	 * @return Saga do jogo se pertecer a uma ou null caso contrario
+	 * */
+	public Saga getSaga() {
+		return saga;
+	}
+	
+	/**
+	 * Altera a saga que o item pertence.
+	 * @param s - nova saga
+	 * */
+	public void setSaga(Saga s) {
+		this.saga = s;
+	}
+	
+}

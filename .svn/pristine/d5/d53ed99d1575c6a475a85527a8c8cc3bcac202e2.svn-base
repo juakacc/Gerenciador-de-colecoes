@@ -1,0 +1,532 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Menu.*;
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import br.com.gerenciador.colecao.Acervo;
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+
+/*
+ * Classe para interagir com o usuário a fim de impressão de um relatório
+ * contendo todos itens ou por seu respectivos filtros
+ * 
+ */
+public class GerenciaRelatorio {
+	
+	private Acervo acervo;
+	
+	
+	public GerenciaRelatorio() {
+		
+		this.acervo = Acervo.getInstancia();
+			 
+	}
+
+	/*
+	 * Método para delegar o que o usuário poderá fazer de acordo com os menus.
+	 * 
+	 */
+	public void selecionar(int opcao) {
+		
+		int escolha = 0;
+		switch(opcao) {
+		
+			case 1:			// Relatório completo dos itens
+			
+				System.out.println("---------------------------------------------------------");
+				System.out.println("--------------(RELATORIO - ITENS COMPLETOS)--------------");
+				System.out.println(acervo.toString());
+				System.out.println("---------------------------------------------------------");
+				System.out.println("---------------------------------------------------------");
+				System.out.println("\n");
+				break;
+		
+				/*
+				 * Neste case vai buscar os itens de acordo com o tipo de filtro.
+				 * Retorna os itens que tenha o mesmo filtro.	
+				 * 
+				 * Filtros: título, estado, preço, marca, conteudo, numero, editora, universo,
+				 * 			saga, dlc.
+				 */
+			
+			case 2: 		// Relatorio por tipo de filtro
+				
+				menuTipoItem();
+				opcao = recuperarInt("O que deseja fazer(0,1,2,3)? ");		
+				
+				switch(opcao) {
+				
+					case 1:			// Exibe os itens do Cd/Dvd
+					
+						dvdCdFiltros();
+						List<Integer> filtrosDvdCd = new ArrayList<>();
+					
+						do {
+							escolha = recuperarInt("Qual o filtro deseja utilizar(0-sair)? ");
+							if (escolha == 0) {
+								break;
+							} else if (escolha >= 1 && escolha <= 5) {
+								filtrosDvdCd.add(escolha);
+							} else {
+								System.out.println("Opção inválida para filtro... Tente novamente!");
+							}
+						} while (true);
+						
+						filtrarDvdCd(filtrosDvdCd);						
+						break;
+					
+					case 2:			// Exibe os itens do Hq			
+					
+						hqFiltros();
+						List<Integer> filtrosHq = new ArrayList<>();
+						
+						do {
+							escolha = recuperarInt("Qual(is) o(s) filtro(s) deseja utilizar (0 -sair)? ");
+						
+							if(escolha == 0) {
+								break;
+							} else if(escolha >=1 && escolha <= 8) {
+								filtrosHq.add(escolha);
+							} else {
+								System.out.println("Opção inválida para filtro... Tente novamente!");
+							}
+						} while (true);
+						
+						filtrarHq(filtrosHq);							
+						break;
+					
+					case 3:			// Exibe os itens do Jogo de Tabuleiro
+					
+						jogoDeTabuleiroFiltros();
+						List<Integer> filtrosJogosDeTabuleiro = new ArrayList<>();
+						do {
+						
+							escolha = recuperarInt("Qual(is) o(s) filtro(s) deseja utilizar (0 -sair)? ");
+						
+							if(escolha == 0) {
+								break;
+							} else if(escolha >=1 && escolha <= 3) {
+								filtrosJogosDeTabuleiro.add(escolha);
+							} else {
+								System.out.println("Opção inválida para filtro... Tente novamente!");
+							}
+						} while (true);
+												
+						filtrarJogosDeTabuleiro(filtrosJogosDeTabuleiro);
+						break;
+									
+					case 4:			// exibe os itens jogos de video game
+					
+						jogoDeVideoGameFiltros();
+						List<Integer> filtrosJogoDeVideoGame = new ArrayList<>();
+						
+						do {
+							escolha = recuperarInt("Qual(is) o(s) filtro(s) deseja utilizar (0 -sair)? ");
+						
+							if(escolha == 0) {
+								break;
+							} else if(escolha >=1 && escolha <= 7) {
+								filtrosJogoDeVideoGame.add(escolha);
+							} else {
+								System.out.println("Opção inválida para filtro... Tente novamente!");
+							}
+						} while (true);
+						
+						filtrarJogosDeVideoGame(filtrosJogoDeVideoGame);			// colocar o método chamado filtrarJogoDeVideoGame
+						break;
+					}
+				break;
+				
+			case 0:
+				
+				break;		// voltar  
+		}
+	}
+		
+	public void filtrarDvdCd(List<Integer> filtrosDvdCd) {
+		
+		List<Item> dvdCdList = Acervo.getInstancia().dvdCdList();
+		
+		List<Item> aux1 = new ArrayList<>();
+		
+		if (filtrosDvdCd.contains(1)) {	// titulo
+			String titulo = recuperarString("Qual o título? ");
+			for (Item item: dvdCdList) {
+				if (titulo.equalsIgnoreCase(item.getTitulo())) {
+					aux1.add(item);
+				} else if (aux1.isEmpty()) {
+					System.out.println("Nenhum item encontrado com este filtro!!");
+				}
+			}
+		}
+		if (filtrosDvdCd.contains(2)) {	// estado
+			String estado = recuperarString("Qual o estado? ");
+			for (Item item: dvdCdList) {
+				if (estado.equalsIgnoreCase(item.getEstado())) {
+					if (!(aux1.contains(item.getEstado()))) {
+						aux1.add(item);
+					} else {
+						aux1.contains(item);
+					}
+				} else {
+					aux1.clear();
+					System.out.println("Nenhum item encontrado com este filtro!!");
+				}
+			}
+		}
+		if (filtrosDvdCd.contains(3)) {  //preço
+			double preco = recuperarDouble("Qual o preço?");
+			for(Item item: dvdCdList) {
+				if(preco == item.getPrecoDeCompra()) {
+					if(!(aux1.contains(item.getPrecoDeCompra()))) {
+						aux1.add(item);
+					} else {
+						aux1.contains(item);
+					}
+				} else {
+					aux1.clear();
+					System.out.println("Nenhum item encontrado com este filtro!!");
+			
+				}
+			}	
+		}
+		if (filtrosDvdCd.contains(4)) {  // marca
+			String marca = recuperarString("Qual a marca?"); 
+			for(Item item: dvdCdList) {
+				DvdCd aux = (DvdCd) item;
+				if(marca.equalsIgnoreCase(aux.getMarca())) {
+					if(!(aux1.contains(aux.getMarca()))) {
+						aux1.add(aux);
+					} else {
+						aux1.contains(item);
+					} 
+				} else {
+					aux1.clear();
+					System.out.println("Nenhum item encontrado com este filtro!!");
+				}
+			}
+		}
+		if (filtrosDvdCd.contains(5)) {  // conteúdo
+			String conteudo = recuperarString("Qual o conteúdo?");
+			for(Item item: dvdCdList) {
+				DvdCd aux = (DvdCd) item;
+				if(conteudo.equalsIgnoreCase(aux.getConteudo())) {
+					if(!(aux1.contains(aux.getConteudo()))) {
+						aux1.add(aux);
+					} else {
+						aux1.contains(item);
+					}
+				} else {
+					aux1.clear();
+					System.out.println("Nenhum item encontrado com este filtro!!");
+				}
+			}
+		}
+		if(!(aux1.isEmpty())){
+			System.out.println("--------------------------------------------------");
+			System.out.println("---------------Itens Encontrados------------------");
+			for(Item item: dvdCdList) {
+				System.out.println(item.toString());
+			}
+		}	
+	}
+		
+	public void filtrarHq(List<Integer> filtrosHq) {
+		
+		List<Item> hqList = Acervo.getInstancia().hqList();
+		
+		List<Item> aux1 = new ArrayList<>();
+					
+		if (filtrosHq.contains(1)) {	// titulo
+			String titulo = recuperarString("Qual o título? ");
+			for(Item item: hqList) {
+				if(titulo.equalsIgnoreCase(item.getTitulo())) {
+					aux1.add(item);
+				}
+			}
+		}
+		if (filtrosHq.contains(2)) {	// estado
+			String estado = recuperarString("Qual o estado? ");
+			for(Item item: hqList) {
+				if(estado.equalsIgnoreCase(item.getEstado())) {
+					if(!(aux1.contains(item.getEstado()))) {
+						aux1.add(item);
+					} else {
+						aux1.clear();;
+					}
+				}
+			}
+		}
+		if (filtrosHq.contains(3)) {  //preço
+			double preco = recuperarInt("Qual o preço?");
+			for(Item item: hqList){
+				if(preco == item.getPrecoDeCompra()) {
+					if(!(aux1.contains(item.getPrecoDeCompra()))) {
+						aux1.add(item);
+					} else {
+						aux1.clear();;
+					}
+				}
+			}
+		}	
+		if (filtrosHq.contains(4)) {  // número
+			int numero = recuperarInt("Qual o número?"); 
+			for(Item item: hqList) {
+				Hq aux = (Hq) item;
+				if(numero == aux.getNumero()) {
+					if(!(aux1.contains(aux.getNumero()))) {
+						aux1.add(aux);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}
+		if (filtrosHq.contains(5)) {  // editora
+			String editora = recuperarString("Qual a editora?");
+			for(Item item: hqList) {
+				Hq aux = (Hq) item;
+				if(editora.equalsIgnoreCase(aux.getEditora())) {
+					if(!(aux1.contains(aux.getEditora()))) {
+						aux1.add(aux);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}
+		if (filtrosHq.contains(6)) {  //universo 
+			String universo = recuperarString("Qual o universo?");
+			for(Item item: hqList) {
+				Hq aux = (Hq) item;
+				if(universo.equalsIgnoreCase(aux.getEditora())) {
+					if(!(aux1.contains(aux.getUniverso()))) {
+						aux1.add(aux);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}		
+		if (filtrosHq.contains(7)) {  // nome da saga
+			String nomeDaSaga = recuperarString("Qual o nome da saga?");
+			for(Item item: hqList) {
+				Hq aux = (Hq) item;
+				if(nomeDaSaga.equalsIgnoreCase(aux.getSaga().getNome())) {
+					if(!(aux1.contains(aux.getSaga().getNome()))) {
+						aux1.add(aux);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}
+		
+//		if (filtrosHq.contains(8)) {  // número da saga
+//			double numeroDaSaga = recuperarInt("Qual o número da saga?");
+//			for(Item item: hqList) {
+//				Hq aux = (Hq) item;
+//				if(numeroDaSaga == aux.getSaga().getNumero()) {
+//					if(!(aux1.contains(aux.getSaga().getNumero()))) {
+//						aux1.add(aux);
+//					} else {
+//						aux1.clear();
+//					}
+//				}
+//			}
+//		}
+		if(aux1.isEmpty()){
+			System.out.println("");
+			System.out.println("--------------------------------------------------");
+			System.out.println("Nenhum item encontrado com os filtros digitados!!!");
+			
+		} else { 
+			System.out.println("--------------------------------------------------");
+			System.out.println("---------------Itens Encontrados------------------");
+			for(Item item: hqList) {
+				System.out.println(item.toString());
+			}
+		}
+	}
+
+	public void filtrarJogosDeTabuleiro (List<Integer> filtrosJogosDeTabuleiro) {
+		
+		List<Item> jogosDeTabuleiro = Acervo.getInstancia().jogoDeTabuleiroList(); // todos os jogos de tabuleiro do usuário
+		
+		List<Item> aux1 = new ArrayList<>();		// lista para auxiliar
+		
+		if (filtrosJogosDeTabuleiro.contains(1)) {			// titulo
+			String titulo = recuperarString("Qual o título? ");
+			
+			for(Item item : jogosDeTabuleiro) {
+				if(titulo.equalsIgnoreCase(item.getTitulo())) {
+					aux1.add(item);
+					if (aux1.isEmpty()) {
+						System.out.println("Nenhum ITEM .....");
+						return;
+					} else {
+						jogosDeTabuleiro = new ArrayList<>(aux1);
+						aux1.clear();
+					}
+				}
+			}
+		}
+				
+		if (filtrosJogosDeTabuleiro.contains(2)) {	// estado
+			String estado = recuperarString("Qual o estado? ");
+			
+			for(Item item : jogosDeTabuleiro) {
+				if(estado.equalsIgnoreCase(item.getEstado())) {
+					aux1.add(item);
+
+					if (aux1.isEmpty()) {
+						System.out.println("Nenhum ITEM .....");
+						return;
+					} else {
+						jogosDeTabuleiro = new ArrayList<>(aux1);
+						aux1.clear();
+					}
+				}
+			}
+		}
+				
+		if (filtrosJogosDeTabuleiro.contains(3)) {  //preço
+			double preco = recuperarInt("Qual o preço?");
+			
+			for(Item item: jogosDeTabuleiro){
+				if(preco == item.getPrecoDeCompra()) {
+					aux1.add(item);
+
+					if (aux1.isEmpty()) {
+						System.out.println("Nenhum ITEM .....");
+						return;
+					} else {
+						jogosDeTabuleiro = new ArrayList<>(aux1);
+						aux1.clear();
+					}
+				} 
+			}
+		}
+		
+		if(jogosDeTabuleiro.isEmpty()){
+			System.out.println("\n--------------------------------------------------");
+			System.out.println("Nenhum item encontrado com os filtros digitados!!!");
+		} else {
+			System.out.println("--------------------------------------------------");
+			System.out.println("---------------Itens Encontrados------------------");
+			for(Item item: jogosDeTabuleiro) {
+				System.out.println(item.toString());
+			}
+		}
+		
+	}
+	public void filtrarJogosDeVideoGame(List<Integer> filtrosJogosDeVideoGame) {
+	
+		List<Item> jogoDeVideoGameList = new ArrayList<>(); 
+	
+		List<Item> aux1 = new ArrayList<>();
+			
+		if (filtrosJogosDeVideoGame.contains(1)) {	// titulo
+			String titulo = recuperarString("Qual o título? ");
+			for(Item item: jogoDeVideoGameList) {
+				if(titulo.equalsIgnoreCase(item.getTitulo())) {
+					aux1.add(item);
+				}
+			}
+		}
+		if (filtrosJogosDeVideoGame.contains(2)) {	// estado
+			String estado = recuperarString("Qual o estado? ");
+			for(Item item: jogoDeVideoGameList) {
+				if(estado.equalsIgnoreCase(item.getEstado())) {
+					if(!(aux1.contains(item.getEstado()))) {
+						aux1.add(item);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}
+		if (filtrosJogosDeVideoGame.contains(3)) {  //preço
+			double preco = recuperarInt("Qual o preço?");
+			for(Item item: jogoDeVideoGameList){
+				if(preco == item.getPrecoDeCompra()) {
+					if(!(aux1.contains(item.getPrecoDeCompra()))) {
+						aux1.add(item);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}	
+		if (filtrosJogosDeVideoGame.contains(4)) {  // console
+			String console = recuperarString("Qual o console?"); 
+			for(Item item: jogoDeVideoGameList) {
+				JogoDeVideoGame aux = (JogoDeVideoGame) item;
+				if(console.equalsIgnoreCase(aux.getConsole())) {
+					if(!(aux1.contains(aux.getConsole()))) {
+						aux1.add(aux);
+					} else {
+						aux1.clear();
+					}
+				}
+			}
+		}	
+//		if (filtrosJogosDeVideoGame.contains(5)) {  // titulo do Dlc
+//			String titulo = recuperarString("Qual o título do Dlc?");
+//			for(Item item: jogoDeVideoGameList) {
+//				JogoDeVideoGame aux = (JogoDeVideoGame) item;
+//				if(titulo.equalsIgnoreCase(aux.getDlc().getTitulo())) {
+//					if(!(aux1.contains(aux.getDlc().getTitulo()))) {
+//						aux1.add(aux);
+//					} else {
+//						aux1.clear();
+//					}
+//				}
+//			}
+//		}	
+//		if (filtrosJogosDeVideoGame.contains(6)) {  // jogo pertencente a Dlc
+//			String dlc = recuperarString("Qual o jogo que a Dlc pertence?");
+//			for(Item item: jogoDeVideoGameList) {
+//				JogoDeVideoGame aux = (JogoDeVideoGame) item;
+//				if(dlc.equalsIgnoreCase(aux.getDlc().getJogo())) {
+//					if(!(aux1.contains(aux.getDlc().getJogo()))) {
+//						aux1.add(aux);
+//					} else {
+//						aux1.clear();
+//					}
+//				}
+//			}
+//		}	
+//		if (filtrosJogosDeVideoGame.contains(7)) {  // a localização da Dlc
+//			String localDlc = recuperarString("Qual é a localização da Dlc?");
+//			for(Item item: jogoDeVideoGameList) {
+//				JogoDeVideoGame aux = (JogoDeVideoGame) item;
+//				if(localDlc.equalsIgnoreCase(aux.getDlc().getLocalizacao())) {
+//					if(!(aux1.contains(aux.getDlc().getLocalizacao()))) {
+//						aux1.add(aux);
+//					} else {
+//						aux1.clear();
+//					}
+//				}
+//			}
+//		}	
+	
+		if(aux1.isEmpty()){
+			System.out.println("");
+			System.out.println("--------------------------------------------------");
+			System.out.println("Nenhum item encontrado com os filtros digitados!!!");
+		} else {
+			System.out.println("--------------------------------------------------");
+			System.out.println("---------------Itens Encontrados------------------");
+			for(Item item: aux1) {
+				System.out.println(item.toString());
+			}
+		}
+	}
+}
+	
+

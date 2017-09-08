@@ -1,0 +1,18 @@
+package br.com.gerenciador.exceptions;
+
+public class SagaNotFoundException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5961514371947823579L;
+
+	public SagaNotFoundException() {
+		super("Saga não encontrada!");
+	}
+	
+	public SagaNotFoundException(String msg) {
+		super(msg);
+	}
+
+}

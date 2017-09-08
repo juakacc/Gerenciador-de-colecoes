@@ -1,0 +1,196 @@
+package br.com.gerenciador.colecao.serie;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.gerenciamento.FabricaItem;
+
+public class Serie extends Seriado {
+	
+	private int quantItens;
+	
+	/**
+	 * Constrói uma nova Série a partir do nome, quantidade 
+	 * e um item de inicialização.
+	 * @param nome - nome da série
+	 * @param quantidadeItens - quantidade de itens dessa série
+	 * @param item - item de inicialização
+	 * */
+	public Serie(String nome, int quantidadeItens, Item item) {
+		this(nome, FabricaItem.tipoItem(item), quantidadeItens);		
+		
+		adicionarItem(item);
+	}	
+	
+	/**
+	 * Constrói uma série a partir do nome, tipo e quantidade de itens
+	 * @param nome - nome da série
+	 * @param tipo - tipo de itens da série
+	 * @param quantidade - quantidade de itens dessa série
+	 * */
+	public Serie(String nome, int tipo, int quantidade) {
+		this(nome, tipo);
+		this.quantItens = quantidade;
+	}
+	
+	/**
+	 * Constróis uma série a partir do nome e do tipo de itens
+	 * e inicializa a lista de itens da série.
+	 * @param nome - nome da série.
+	 * @param tipo - tipo dos itens da série.
+	 * */
+	public Serie(String nome, int tipo) {
+		super(nome, tipo);
+	}
+	
+	/**
+	 * Adiciona um item se possível a serie.
+	 * @param item - item a ser adicionado
+	 * @return True se for adicionado com sucesso ou False caso contrário
+	 * */
+	public boolean adicionarItem(Item item) {
+		if (item == null) {
+			return false;
+		}
+		if (getTipo() != FabricaItem.tipoItem(item)) {
+			System.out.println("Item de um tipo diferente do da série...");
+			return false;
+		}
+		if (item.getSerie() != null) {		// possui uma serie ou trilogia
+			System.out.println("Esse item já pertence a uma SERIE, remova-o "
+					+ "primeiro antes de cadastrar em uma nova");
+			return false;
+		}
+		
+		if (itens.size() < quantItens) {
+			if (itens.add(item)) {
+				item.setSerie(this);
+				return true;
+			}
+		} else {
+			System.out.println("Item não pode ser adicionado, número limite alcançado!");
+		}
+		return false;
+	}
+	
+	/**
+	 * Edita um item caso ele pertença a essa serie
+	 * @return True se for editado com sucesso ou False caso contrário
+	 * */
+	public boolean editarItem(Item novo, Item antigo) {
+		if (itens.remove(antigo)) {
+			antigo.setSerie(null);
+			if (adicionarItem(novo)) {
+				novo.setSerie(this);
+				return true;
+			} else {
+				itens.add(antigo);
+				antigo.setSerie(this);
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove um item da Serie, caso essa Seria contenha apenas um item
+	 * a serie é removida da lista de series do usuário.
+	 * @param item - item que será removido
+	 * @return - true quando o item for removido, false caso contrario
+	 */	
+	public boolean removerItem(Item item) {
+		if (itens.size() == 1) { // ultimo item que tem na serie
+			if (itens.remove(item)) {
+				RepositorioSerie.getInstancia().removerSerie(this);
+				item.setSerie(null);
+				return true;
+			}
+		} else {
+			if (itens.remove(item)) {
+				item.setSerie(null);
+				return true;
+			}
+		}
+		return false;
+	}	
+	
+	/**
+	 * @return A quantidade de itens que essa série tem.
+	 * */
+	public int getQuantItens() {
+		return quantItens;
+	}
+
+	/**
+	 * Altera a quantidade de itens que essa série possui.
+	 * Se a nova quantidade for maior do que o número de
+	 * itens cadastrados
+	 * @param quantItens - nova quantidade de itens.
+	 * */
+	public void setQuantItens(int quantItens) {
+		if (getQuantItens() < quantItens) {
+			this.quantItens = quantItens;
+		}
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		StringBuilder s = new StringBuilder();
+		s.append(super.imprimirParaArquivo() + ";");
+		s.append(getQuantItens());
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Representa uma Serie como String.
+	 * @return A String representante.
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		str.append("-> Série: " + getNome() + "\n");
+		
+		for (Item item : itens) {
+			str.append(item.toString() + "\n");
+		}
+		
+		if (itens.size() == getQuantItens()) {
+			str.append("\nA série está completa! :D");
+		} else {
+			str.append("\nFalta " + (getQuantItens() - itens.size()) + " itens para completar a série!");
+		}
+		return str.toString();
+	}
+	
+	/**
+	 * @return O código de Hash para a série.
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + "serie".hashCode();
+		return result;
+	}
+	
+	/**
+	* Testa a igualdade de um objeto com essa serie. 
+	* Duas series são iguais se elas possuem o mesmo nome e tipo.
+	* @param obj - O objeto a comparar com essa série.
+	* @return true se o objeto for igual ou false caso contrário.
+	* */	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof Serie)) {
+			return false;
+		}
+		Serie outra = (Serie) obj;
+		return super.equals(outra);
+	}
+}

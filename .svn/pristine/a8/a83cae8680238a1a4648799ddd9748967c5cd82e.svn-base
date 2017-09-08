@@ -1,0 +1,169 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Menu.*;
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+import br.com.gerenciador.interfaces.GerenciamentoIF;
+import br.com.gerenciador.pesistencia.*;
+
+/**
+ * Classe para gerenciar as escolhas do usuário
+ * */
+public class Gerencia {
+	
+	private GerenciaItem mItem;
+	private GerenciaAmigo mAmigo;
+	private GerenciaEmprestimo mEmprestimo;
+	private GerenciaRelatorio mRelatorio;
+	private GerenciaDesejos mwish;
+	private GerenciaSeriado mSeriado;
+	
+	/**
+	 * Constrói o gerenciador de coleções do usuário
+	 * E inicializa os atributos necessário para execução.
+	 * */
+	public Gerencia() {
+		this.mItem = new GerenciaItem();
+		this.mAmigo = new GerenciaAmigo();
+		this.mEmprestimo = new GerenciaEmprestimo();
+		this.mRelatorio = new GerenciaRelatorio();
+		this.mwish = new GerenciaDesejos();
+		this.mSeriado = new GerenciaSeriado();
+		gerenciarInteracao();
+	}
+	
+	/**
+	 * Método para interação com o usuário
+	 * */
+	private void gerenciarInteracao() {
+		
+		boolean continua, menuPrincipal;
+		int opcao;
+		
+		System.out.println("Bem Vindo...");
+		System.out.println("Aguarde... Carregando informações!\n");
+		Recupera r = new Recupera();
+		r.recuperar();
+		
+		//menuInformativo();
+		new TelaInicial().imprimir();
+		
+		do {
+			continua = true;
+			opcao = 0;	
+			menuPrincipal = true;
+			
+			do {
+				menuPrincipal();				
+				opcao = recuperarInt("O que deseja fazer(0,1,2,3,4,5,6)? ");
+
+				switch (opcao) {
+				case 1:			// gerenciar itens
+					do {
+						menuItem();	
+						opcao = recuperarInt("O que deseja fazer(0,1,2,3,4,5)? ");
+						if (opcao == 0) {
+							break;
+						} else if (opcao >= 1 && opcao <= 5) { 
+							mItem.selecionar(opcao);
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);			
+					break;
+					
+				case 2:		// gerenciar amigos
+					do {
+						menuAmigo();	
+						opcao = recuperarInt("O que deseja fazer(0,1,2,3,4)? ");
+						if (opcao == 0) {		
+							break;	
+						} else if (opcao >= 1 && opcao <= 4) {
+							mAmigo.selecionar(opcao);
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);
+					break;
+					
+				case 3:		// gerenciar emprestimos
+					do {
+						menuEmprestimo();
+						opcao = recuperarInt("O que deseja fazer(0,1,2,3)? ");
+						if (opcao == 0) {
+							break;
+						} else if (opcao >= 1 && opcao <= 3) {
+							mEmprestimo.selecionar(opcao);
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);
+					break;
+				
+				case 4:			// pesquisa avançada
+					
+					do {
+						menuPesquisa();
+						opcao = recuperarInt("O que deseja fazer(0,1,2)? ");
+							
+						if (opcao == 0) {
+							break;
+						} else if (opcao >= 1 && opcao <= 2) {
+							mRelatorio.selecionar(opcao);
+							
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);
+					
+					
+					break;
+								
+				case 5:			// lista de desejos
+					do {
+						menuWish();
+						opcao = recuperarInt("O que deseja fazer(0,1,2,3,4)? ");
+						
+						if (opcao == 0) {
+							break;
+						} else if (opcao >= 1 && opcao <= 4) {
+							mwish.selecionar(opcao);
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);
+					break;	
+					
+				case 6: 		// gerencia seriados (trilogias, sagas, series e dlcs)
+					do {
+						menuSeriado();
+						opcao = recuperarInt("O que deseja fazer(0,1,2,3,4)? ");
+						if (opcao == 0) {
+							break;
+						} else if (opcao >= 1 && opcao <= 4) {
+							mSeriado.selecionar(opcao);
+						} else {
+							System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+						}
+					} while (true);
+					break;			
+					
+				case 0:
+					menuPrincipal = false;
+					break;	
+				default:
+					System.out.println(GerenciamentoIF.ENTRADA_INVALIDA);
+					break;
+				}
+			} while(menuPrincipal);
+				
+			continua = recuperarBoolean("Deseja realmente sair (1-nao/2-sim)? ");
+			
+		} while(continua);
+		
+		System.out.println("\nAguarde... Salvando informações!");
+		Pesiste p = new Pesiste();
+		p.pesistir();
+		System.out.println("Saindo... Até mais!");
+	}
+	
+}

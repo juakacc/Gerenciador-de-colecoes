@@ -1,0 +1,13 @@
+package br.com.gerenciador.interfaces;
+
+/**
+ * 
+ * */
+public interface SerializadoIF {
+	
+	/**
+	 * 
+	 * */
+	public String imprimirParaArquivo();
+	
+}

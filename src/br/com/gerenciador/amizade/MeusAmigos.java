@@ -1,0 +1,201 @@
+package br.com.gerenciador.amizade;
+
+import java.util.*;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.emprestimo.ItemEmprestado;
+import br.com.gerenciador.emprestimo.RepositorioEmprestimo;
+import br.com.gerenciador.exceptions.AmigoNotFoundException;
+
+/**
+ * Classe para gerenciar o CRUD de amigos
+ * 
+ * Utiliza Singleton para controlar o número de 
+ * instâncias dessa classe no sistema.
+ * */
+public class MeusAmigos {
+	
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static MeusAmigos instancia = null;
+
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static MeusAmigos getInstancia() {
+		if (instancia == null) {
+			instancia = new MeusAmigos();
+		}
+		return instancia;
+	}
+	
+	/**
+	 * Lista de amigos do usuário
+	 * */
+	private Set<Amigo> amigos;
+	
+	/**
+	 * Constrói um Repositório de amigos e
+	 * inicializa a lista para armazenamento.
+	 * */
+	private MeusAmigos() {
+		amigos = new HashSet<Amigo>();
+	}
+	/**
+	 * Adiciona um novo amigo caso ele não esteja cadastrado
+	 * @param amigo - amigo a ser adicionado
+	 * @return True se o amigo foi adicionado com sucesso ou false caso contrário.
+	 * */
+	public boolean adicionarAmigo(Amigo amigo) {
+		if (amigo == null) {
+			return false;
+		}
+		return amigos.add(amigo);
+	}
+	
+	/**
+	 * Remove o amigo caso esteja cadastrado, caso 
+	 * esse amigo esteja com algum item, este é recolhido
+	 * automaticamente.
+	 * @param amigo - amigo a ser removido
+	 * @return True se o amigo foi removido ou False caso contrário. 
+	 * */
+	public boolean removerAmigo(Amigo amigo) {
+		Set<Item> itens = amigo.getItensEmprestados();
+		
+		if (itens.isEmpty()) {
+			return amigos.remove(amigo);
+		} else {
+			if (amigos.remove(amigo)) {
+				for (Item item : itens) {
+					RepositorioEmprestimo.getInstancia().removerItem(new ItemEmprestado(item, amigo));
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+	
+	/**
+	 * Remove todos os amigos cadastrados na lista de amigos do usuário.
+	 * @return True se removeu com sucesso ou False, caso contrário.
+	 * */
+	public boolean removerTodos() {
+		List<Amigo> amigosAux = getAmigos();
+		
+		for (Amigo amigo : amigosAux) {
+			if (!removerAmigo(amigo)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Metodo para verificar se um amigo esta cadastrado ou não
+	 * @param amigo - amigo a ser pesquisado
+	 * @return true se o amigo estiver cadastrado ou false caso contrário
+	 * */
+	public boolean pertence(Amigo amigo) {
+		return amigos.contains(amigo);
+	}
+	
+	/**
+	 * Metodo para recuperar um amigo, recupera uma lista de
+	 * amigos que tenham o nome informado.
+	 * @param nome - nome do amigo
+	 * @return Lista de amigos caso exista ao menos um.
+	 * @throws AmigoNotFoundException caso o amigo não exista
+	 * */
+	public List<Amigo> getAmigo(String nome) throws AmigoNotFoundException {
+		List<Amigo> lista = new ArrayList<>();
+		
+		for (Amigo amigo : amigos) {
+			if (nome.equalsIgnoreCase(amigo.getNome())) {
+				lista.add(amigo);
+			}
+		}
+		if (lista.isEmpty()) {
+			throw new AmigoNotFoundException();
+		}
+		return lista;
+	}
+	
+	/**
+	 * Representa a lista de amigos como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		for (Amigo amigo : amigos) {
+			s.append("\n" + amigo.toString() + "\n");
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Exibe as informações de todos os amigos
+	 * */
+	public void exibirAmigos() {
+		if (amigos.isEmpty()) {
+			System.out.println("\nNenhum amigo cadastrado... :(");
+		} else {
+			System.out.println("\n------------------------");
+			System.out.println("|::::::: AMIGOS :::::::|");
+			System.out.println("------------------------");
+			System.out.println(toString());
+			System.out.println("------------------------");
+		}
+	}
+	
+	/**
+	 * Imprime as informações de um amigo em particular
+	 * @param nome - nome do amigo a ser impresso
+	 * */
+	public void exibirAmigo(String nome) {
+		
+		try {
+			List<Amigo> a = getAmigo(nome);
+			
+			System.out.println("\n---------------------------------");
+			System.out.println("|::::: AMIGO EM PARTICULAR :::::|");
+			System.out.println("---------------------------------\n");
+			for (Amigo amigo : a) {
+				System.out.println(amigo.toString() + "\n");
+			}
+			System.out.println("---------------------------------");
+		} catch (AmigoNotFoundException e) {
+			System.out.println("\nNenhum amigo cadastrado com esse nome... :(");
+		}
+	}
+	
+	/**
+	 * Total de amigos cadastrados
+	 * @return Total de amigos
+	 * */
+	public int totalDeAmigos() {
+		return amigos.size();
+	}
+	
+	/**
+	 * Verifica se a lista de amigos do usuário está vazia
+	 * @return True se estiver ou False, caso contrário.
+	 * */
+	public boolean isVazio() {
+		return amigos.isEmpty();
+	}
+	
+	/**
+	 * Recupera todos os amigos do usuário.
+	 * @return Lista contendo os amigos.
+	 * */
+	public List<Amigo> getAmigos() {
+		return new ArrayList<>(amigos);
+	}
+}

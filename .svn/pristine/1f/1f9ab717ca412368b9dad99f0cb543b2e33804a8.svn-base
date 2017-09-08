@@ -1,0 +1,153 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.colecao.serie.Serie;
+
+/**
+ * Esta classe representa um CD ou DVD
+ * */
+public class DvdCd extends Item {
+
+	private String marca;
+	private String conteudo;
+	private boolean assistido;
+	
+	/**
+	 * Constroi um CD/DVD e atribui os valores informados como parametro
+	 * @param titulo - titulo do item
+	 * @param estado - estado em que o item se encontra
+	 * @param preco - preco de compra do item
+	 * @param observacoes - alguma observação sobre o item caso exista
+	 * @param marca - marca do item
+	 * @param conteudo - conteudo do item
+	 * @param assistido - se o item ja foi assistido ou nao
+	 * @param nivel - nivel de importancia para o usuario
+	 * */
+	public DvdCd(String titulo, String estado, double preco, String observacoes, 
+			int nivel, String marca, String conteudo, boolean assistido) {
+		
+		super(titulo, estado, preco, observacoes, nivel);
+		this.marca = marca;
+		this.conteudo = conteudo;
+		this.assistido = assistido;
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para o DVD/CD
+	 * @return O código de hash
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (isAssistido() ? 1231 : 1237);
+		result = prime * result
+				+ ((getConteudo() == null) ? 0 : getConteudo().hashCode());
+		result = prime * result + ((getMarca() == null) ? 0 : getMarca().hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este DVD/CD. Os dois 
+	* são iguais se eles possuem o mesmo titulo, estado, marca e conteudo.
+	* @param obj - O objeto a comparar com este item.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof DvdCd))
+			return false;
+		
+		DvdCd outro = (DvdCd) obj;
+		
+//		return super.equals(outro) &&
+//				this.getMarca().equalsIgnoreCase(outro.getMarca()) &&
+//				this.getConteudo().equalsIgnoreCase(outro.getConteudo());
+		return this.hashCode() == outro.hashCode();
+	}
+
+	/**
+	 * Representa um DVD/CD como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(super.toString());
+		s.append("\nMarca = " + getMarca());
+		s.append(", Conteudo = " + getConteudo());
+		
+		s.append(isAssistido() ? ", já foi assistido." : ", ainda não foi assistido.");
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append("1;");			// tipo
+		s.append(super.imprimirParaArquivo() + ";");
+		s.append(getMarca() + ";");
+		s.append(getConteudo() + ";");
+		s.append(isAssistido() + ";");
+		s.append("" + getVezesEmprestado() + ";");
+		Seriado serie = getSeriado();
+		s.append(serie == null ? "NULL" : serie.getNome() + ";" + ((serie instanceof Serie) ? 1 : 2));
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna a marca a que o DVD/CD pertence
+	 * @return String marca
+	 * */
+	public String getMarca() {
+		return marca;
+	}
+	
+	/**
+	 * @param marca the marca to set
+	 */
+	public void setMarca(String marca) {
+		this.marca = marca;
+	}
+
+	/**
+	 * Retorna o conteudo que o DVD/CD contem
+	 * @return String conteudo
+	 * */
+	public String getConteudo() {
+		return conteudo;
+	}
+	
+	/**
+	 * @param conteudo the conteudo to set
+	 */
+	public void setConteudo(String conteudo) {
+		this.conteudo = conteudo;
+	}
+
+	/**
+	 * Recupera se o item ja foi assistido
+	 * @return true se o DVD/CD foi assistido/ouvido ou false caso contario
+	 * */
+	public boolean isAssistido() {
+		return assistido;
+	}
+	
+	/**
+	 * @param assistido the assistido to set
+	 */
+	public void setAssistido(boolean assistido) {
+		this.assistido = assistido;
+	}
+}

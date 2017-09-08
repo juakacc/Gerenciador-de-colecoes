@@ -1,0 +1,143 @@
+package br.com.gerenciador.colecao.serie;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.DvdCd;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeTabuleiro;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeVideoGame;
+import br.com.gerenciador.exceptions.SerieNotFoundException;
+
+public class RepositorioSerieTest {
+
+	RepositorioSerie series;
+	Serie s1, s2, s3;
+	
+	@Before
+	public void setUp() throws Exception {
+		series = RepositorioSerie.getInstancia();
+		series.removerTodas();
+		s1 = new Serie("Mario", Item.GAME, 2);
+			JogoDeVideoGame j1 = new JogoDeVideoGame("Mario Bros", "novo", 15, null, 5, "nitendo", true);
+			JogoDeVideoGame j2 = new JogoDeVideoGame("Mario Tenis", "novo", 20, null, 5, "nitendo", true);
+			s1.adicionarItem(j1);
+			s1.adicionarItem(j2);
+		
+		s2 = new Serie("Demolidor", Item.DVDCD, 2);
+			DvdCd dvd1 = new DvdCd("Demolidor1", "novo", 30, "", 4, "Date", "1Temporada", true);
+			DvdCd dvd2 = new DvdCd("Demolidor2", "novo", 30, "", 4, "Date", "2Temporada", false);
+			s2.adicionarItem(dvd1);
+			s2.adicionarItem(dvd2);
+		
+		s3 = new Serie("Tabuleiros", Item.TABULEIRO, 3);
+			JogoDeTabuleiro jogo1 = new JogoDeTabuleiro("dama", "novo", 9, null, 5);
+			JogoDeTabuleiro jogo2 = new JogoDeTabuleiro("xadrez", "novo", 15.99, null, 3);
+			JogoDeTabuleiro jogo3 = new JogoDeTabuleiro("sudoku", "usado", 3, "rabiscado", 4);
+			s3.adicionarItem(jogo1);
+			s3.adicionarItem(jogo2);
+			s3.adicionarItem(jogo3);
+	}
+
+	@Test
+	public void testAdicionarSerie() {
+		series.removerTodas();
+		assertNotNull(series);
+		assertTrue(series.isVazio());
+		assertFalse(series.adicionarSerie(null));
+		
+		series.adicionarSerie(s1);
+		assertEquals(1, series.totalSeries());
+		
+		series.adicionarSerie(s2);
+		assertEquals(2, series.totalSeries());
+		
+		series.adicionarSerie(s2);		// serie repetida...
+		assertEquals(2, series.totalSeries());
+		
+		series.adicionarSerie(s3);
+		assertEquals(3, series.totalSeries());
+	}
+
+	@Test
+	public void testRemoverSerie() {
+		series.adicionarSerie(s1);
+		series.adicionarSerie(s2);
+		series.adicionarSerie(s3);
+		
+		assertEquals(3, series.totalSeries());
+		
+		series.removerSerie(s1);
+		assertEquals(2, series.totalSeries());
+		
+		series.removerSerie(s2);
+		assertEquals(1, series.totalSeries());
+		
+		series.removerSerie(s3);
+		assertEquals(0, series.totalSeries());
+		
+		series.adicionarSerie(s1);
+		series.adicionarSerie(s2);
+		series.adicionarSerie(s3);
+		assertEquals(3, series.totalSeries());
+		
+		series.removerTodas();
+		assertEquals(0, series.totalSeries());
+	}
+	
+	@Test
+	public void testPertence() {
+		series.adicionarSerie(s1);
+		series.adicionarSerie(s2);
+		series.adicionarSerie(s3);
+		
+		assertTrue(series.pertence(s1));
+		assertTrue(series.pertence(s2));
+		
+		series.removerSerie(s3);
+		assertFalse(series.pertence(s3));
+	}
+	
+	@Test
+	public void testGets() {
+		series.adicionarSerie(s1);
+		series.adicionarSerie(s2);
+		series.adicionarSerie(s3);
+		
+		List<Serie> aux = new ArrayList<>();
+		aux.add(s1);
+		
+		try {
+			assertEquals(aux, series.getSerie("Mario"));
+		} catch (SerieNotFoundException e) { 
+			fail(); 
+		}
+
+		assertEquals(s2, series.getSerie("Demolidor", Item.DVDCD));
+		
+		aux.clear();
+		aux.add(s1); aux.add(s2); aux.add(s3);
+		
+		assertTrue(series.getSeries().containsAll(aux));
+	}
+	
+	@Test
+	public void testToString() {
+		series.adicionarSerie(s1);
+		series.adicionarSerie(s2);
+		series.adicionarSerie(s3);
+		
+		StringBuilder str = new StringBuilder();
+		
+		str.append("\n" + s1.toString() + "\n");
+		str.append("\n" + s3.toString() + "\n");
+		str.append("\n" + s2.toString() + "\n");
+		
+		assertEquals(str.toString(), series.toString());
+	}
+}

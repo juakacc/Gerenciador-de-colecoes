@@ -1,0 +1,191 @@
+package br.com.gerenciador.colecao.itemColecionavel.dlc;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import br.com.gerenciador.exceptions.DlcNotFoundException;
+
+/**
+ * Classe que funciona como repositório que possui uma
+ * lista para armazenar todas as DLC's usadas pelos 
+ * jogos do usuário.
+ * 
+ * Utiliza Singleton para controlar o número de 
+ * instâncias dessa classe no sistema.
+ * */
+public class RepositorioDlc {
+
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static RepositorioDlc instancia;
+	
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static RepositorioDlc getInstancia() {
+		if (instancia == null) {
+			instancia = new RepositorioDlc();
+		}
+		return instancia;
+	}
+	
+	/**
+	 * Lista de DLC's do usuário
+	 * */
+	private Set<Dlc> dlcs;
+	
+	/**
+	 * Constrói um Repositório e
+	 * inicializa a lista para armazenamento.
+	 * */
+	private RepositorioDlc() {
+		dlcs = new HashSet<>();
+	}
+	
+	/**
+	 * Adiciona uma DLC a lista de DLC's.
+	 * @return True se a DLC foi removida ou False, caso contrário.
+	 * */
+	public boolean adicionarDlc(Dlc dlc) {
+		if (dlc == null) {
+			return false;
+		}
+		return dlcs.add(dlc);
+	}
+	
+	/**
+	 * Remove uma DLC da lista de DLC's cadastradas.
+	 * @return True se foi removida com sucesso ou False, caso contrário.
+	 * */
+	public boolean removerDlc(Dlc dlc) {
+		if (dlcs.remove(dlc)) {
+			dlc.getJogo().removerDlc(dlc);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove todas as DLC's cadastradas na lista.
+	 * @return True se ocorreu com sucesso ou False, caso contrário.
+	 * */
+	public boolean removerTodas() {
+		List<Dlc> dlcsAux = getDlcs();
+		
+		if (dlcs.removeAll(dlcs)) {
+			for (Dlc dlc : dlcsAux) {
+				dlc.getJogo().removerDlc(dlc);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Verifica se a lista de DLC's contém uma determinada DLC.
+	 * @return True se a DLC informada pertence ou False, caso contrário.
+	 * */
+	public boolean pertence(Dlc dlc) {
+		return dlcs.contains(dlc);
+	}
+	
+	/**
+	 * Verifica se a lista de DLC's está vazia.
+	 * @return True se vazia ou False, caso contrário.
+	 * */
+	public boolean isVazio() {
+		return dlcs.isEmpty();
+	}
+	
+	/**
+	 * @return O total de DLC's cadastradas pelo usuário.
+	 * */
+	public int totalDeDlcs() {
+		return dlcs.size();
+	}
+	
+	/**
+	 * Recupera uma lista de DLC's que tenham um determinado título
+	 * @param titulo - título a ser pesquisado.
+	 * @return A lista contendos as DLC's caso exista pelo menos uma
+	 * @throws DlcNotFoundException - caso não exista nenhuma DLC com 
+	 * esse título
+	 * */
+	public List<Dlc> getDlc(String titulo) throws DlcNotFoundException {
+		List<Dlc> aux = new ArrayList<>();
+		
+		for (Dlc dlc : dlcs) {
+			if (titulo.equalsIgnoreCase(dlc.getTitulo())) {
+				aux.add(dlc);
+			}
+		}
+		if (aux.isEmpty()) {
+			throw new DlcNotFoundException();
+		}
+		return aux;
+	}
+	
+	/**
+	 * Recupera todas as DLC's cadastradas pelo usuário.
+	 * @return Uma lista contendo as DLC's
+	 * */
+	public List<Dlc> getDlcs() {
+		return new ArrayList<>(dlcs);
+	}
+	
+	/**
+	 * Representa a lista de DLC's como String.
+	 * @return A String representante.
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		for (Dlc dlc : dlcs) {
+			str.append("\n" + dlc.toString() + "\n");
+		}
+		return str.toString();
+	}
+	
+	/**
+	 * Exibe na tela para o usuário a lista de DLC's cadastradas.
+	 * */
+	public void mostrarDlcs() {
+		if (isVazio()) {
+			System.out.println("\nNenhuma DLC cadastrada... :(");
+		} else {
+			System.out.println("\n----------------------------");
+			System.out.println("|:::::::::: DLC's :::::::::|");
+			System.out.println("----------------------------");
+			System.out.println(toString());
+			System.out.println("----------------------------");
+		}
+	}
+	
+	/**
+	 * Exibe as caracteristicas de uma determinada DLC, caso exista
+	 * ao menos uma cadastrada com esse título.
+	 * @param titulo
+	 * */
+	public void mostrarDlc(String titulo) {
+		try {
+			List<Dlc> lista = getDlc(titulo);
+			
+			System.out.println("\n----------------------------");
+			System.out.println("|::: DLC EM PARTICULAR :::|");
+			System.out.println("----------------------------");
+			for (Dlc dlc : lista) {
+				System.out.println(dlc.toString() + "\n");
+			}
+			System.out.println("----------------------------");
+		} catch (DlcNotFoundException e) {
+			System.out.println("\nNenhuma DLC cadastrada com esse nome... :(");
+		}
+	}
+}

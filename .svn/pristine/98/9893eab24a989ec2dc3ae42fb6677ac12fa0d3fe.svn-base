@@ -1,0 +1,87 @@
+package br.com.gerenciador.emprestimo;
+
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.amizade.Amigo;
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.colecao.saga.Saga;
+import br.com.gerenciador.emprestimo.RepositorioEmprestimo;
+
+public class RepositoriosItensTest {
+
+	RepositorioEmprestimo repositorio;
+	
+	Amigo amigo1, amigo2, amigo3, amigo4;
+	
+	Item item1, item2, item3, item4;
+	
+	@Before
+	public void setUp() throws Exception {
+		repositorio = RepositorioEmprestimo.getInstancia();
+		
+		amigo1 = new Amigo("João", "masculino", "primo", "rua 25 de março", 33319991);
+		amigo2 = new Amigo("Maria", "feminino", "irma", "Frei Ibiapina", 1190987654);
+		amigo3 = new Amigo("José", "masculino", "tio", "Sitio Aroeiras", 30028922);
+		amigo4 = new Amigo("Lucia", "feminino", "neta", "Rua de cima", 50507685);
+		
+		item1 = new JogoDeTabuleiro("Dama", "novo", 9.99, "nenhuma", 5);
+		item2 = new JogoDeVideoGame("nfsu2", "novo", 30, "lancamento", 5, "ps3", true, null);
+		item3 = new DvdCd("Racionais", "novo", 59.9, "nenhuma", 5, "somlivre", "Musicas exclusivas do Racionais", true);
+		item4 = new Hq("Action Comics", "usado", 1_000_000, "muito valioso", 5, 1, "Comics", "fantasioso", true);
+		
+		Saga saga = new Saga("Super herois", 2);
+		saga.adicionarItemNaSaga((Hq) item4, 2);
+		
+	}
+
+	@Test
+	public void testAdicionarItem() {
+		repositorio.adicionarItem(item1, amigo1, 2);
+		assertEquals(1, repositorio.totalDeItens());
+		
+		repositorio.adicionarItem(item2, amigo2, 3);
+		repositorio.adicionarItem(item3, amigo3, 4);
+		assertEquals(3, repositorio.totalDeItens());
+		
+		repositorio.adicionarItem(item4, amigo4, 5);
+		assertEquals(4, repositorio.totalDeItens());
+	}
+
+	@Test
+	public void testRemoverItem() {
+		repositorio.adicionarItem(item1, amigo1, 2);
+		repositorio.adicionarItem(item2, amigo2, 3);
+		repositorio.adicionarItem(item3, amigo3, 4);
+		repositorio.adicionarItem(item4, amigo4, 5);
+		
+		repositorio.removerItem(item1, amigo1);		// item que existe
+		assertEquals(3, repositorio.totalDeItens());
+		
+		repositorio.removerItem(item1, amigo1);		// item que não existe nos emprestados
+		assertEquals(3, repositorio.totalDeItens());
+		
+		repositorio.removerItem(item2, amigo2);		// existentes
+		repositorio.removerItem(item3, amigo3);
+		assertEquals(1, repositorio.totalDeItens());
+	}
+
+	@Test
+	public void testToString() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append("\n" + amigo1.getNome() + " - pegou - ");
+		s.append(item1.getTitulo() + " - emprestado e tem - ");
+		s.append(2 + " - dias para devolver.\n");
+	
+		repositorio.removerItem(item2, amigo2);
+		repositorio.removerItem(item3, amigo3);
+		repositorio.removerItem(item4, amigo4);
+		
+		assertEquals(s.toString(), repositorio.toString());
+	}
+
+}

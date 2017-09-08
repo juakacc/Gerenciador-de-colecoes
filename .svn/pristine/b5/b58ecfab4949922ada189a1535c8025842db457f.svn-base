@@ -1,0 +1,233 @@
+package br.com.gerenciador.emprestimo;
+
+import java.util.*;
+
+import br.com.gerenciador.amizade.Amigo;
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.exceptions.ItemNotFoundException;
+
+/**
+ * Classe para armazenamento dos itens do usuário 
+ * que estão emprestados.
+ * 
+ * Utiliza singleton para controlar o número 
+ * de instâncias dessa classe no sistema.
+ * */
+public class RepositorioEmprestimo {
+	
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static RepositorioEmprestimo instancia = null;
+
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static RepositorioEmprestimo getInstancia() {
+		if (instancia == null) {
+			instancia = new RepositorioEmprestimo();
+		}
+		return instancia;
+	}
+	
+	/**
+	 * Lista de itens emprestados.
+	 * */
+	private Set<ItemEmprestado> emprestados;
+	
+	/**
+	 * Constrói um repositório de itens emprestados
+	 * e inicializa a lista de itens.
+	 * */
+	private RepositorioEmprestimo() {
+		emprestados = new HashSet<>();
+	}
+	
+	/**
+	 * Adiciona um item a lista de emprestados do sistema
+	 * @param item - item a ser adicionado
+	 * @return True se for adicionado com sucesso ou False, caso contrário.
+	 * */
+	public boolean adicionarItem(ItemEmprestado item) {
+		if (item == null) {
+			return false;
+		}
+		if (emprestados.add(item)) {
+			Item it = item.getItem();
+			Amigo amigo = item.getAmigo();
+			
+			Acervo.getInstancia().getItensDisponiveis().remove(it);		
+			it.setEmprestado();			
+			amigo.adicionarItem(it);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Método para adicionar um item a lista de emprestados.
+	 * (na recuperação do sistema, a manter o estado)
+	 * @param item
+	 * */
+	public void adicionarItemDaPersistencia(ItemEmprestado item) {
+		emprestados.add(item);
+	}
+	
+	/**
+	 * Metodo para remover um item da lista de emprestados do sistema
+	 * @param item - item que está emprestado
+	 * @param amigo - amigo que está com o item
+	 * @return True se for removido com sucesso ou False, caso contrário.
+	 * */	
+	public boolean removerItem(ItemEmprestado item) {
+		if (emprestados.remove(item)) {
+			Item it = item.getItem();
+			Amigo amigo = item.getAmigo();
+			
+			amigo.removerItem(it);
+			Acervo.getInstancia().adicionarItem(it);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove todos os itens emprestados do sistema
+	 * Apenas para ajudar nos testes
+	 * @return True se remover todo ou False, caso contrário
+	 * */
+	public void removerTodos() {
+		emprestados.clear();
+	}
+	
+	/**
+	 * Método que retorna a quantidade de dias restantes para que o item seja recolhido
+	 * @param item - item a ser verificado
+	 * @return dias restantes para o recolhimento do item, 
+	 * -1 caso o item nao esteja emprestado ou nao exista
+	 * */
+	private int diasRestantes(Item item, Amigo amigo) {
+		int dias = -1;
+		
+		for (ItemEmprestado itemEmprestado : emprestados) {
+			
+			if (item.equals(itemEmprestado.getItem()) && amigo.equals(itemEmprestado.getAmigo())) {
+				Calendar dataDaEntrega = itemEmprestado.getDataDaEntrega();
+				Calendar dataAtual = Calendar.getInstance();
+				
+				dias = dataDaEntrega.get(Calendar.DAY_OF_YEAR) - dataAtual.get(Calendar.DAY_OF_YEAR);
+				return dias;
+			}
+		}
+		return dias;
+	}
+	
+	/**
+	 * Metodo para verificar se um item está emprestado a um 
+	 * determinado amigo.
+	 * @param item
+	 * @param amigo
+	 * @return Retorna true caso o item esteja com esse amigo 
+	 * ou false caso contrário.
+	 * */
+	public boolean pertence(Item item, Amigo amigo) {
+		return emprestados.contains(new ItemEmprestado(item, amigo));
+	}
+	
+	/**
+	 * Retorna o total de itens emprestados
+	 * @return Total de itens
+	 * */
+	public int totalDeItens() {
+		return emprestados.size();
+	}
+	
+	/**
+	 * Verifica se a lista de emprestimos do usuário está vazia.
+	 * @return True se estiver vazia ou False, caso contrário.
+	 * */
+	public boolean isVazio() {
+		return emprestados.isEmpty();
+	}
+	
+	/**
+	 * Método para exibir um relatório dos itens que estão emprestados
+	 * */
+	public void relatorioDeItens() {
+		if (emprestados.isEmpty()) {
+			System.out.println("\nNenhum item emprestado... :(");
+		} else {
+			System.out.println("\n-------------------------------------");
+			System.out.println("|:::::::: ITENS EMPRESTADOS ::::::::|");
+			System.out.println("-------------------------------------");
+			System.out.println(toString());
+			System.out.println("-------------------------------------");
+		}
+	}
+	
+	/**
+	 * Representa os itens emprestados como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		for (ItemEmprestado itemEmprestado : emprestados) {
+			Item item = itemEmprestado.getItem();
+			Amigo amigo = itemEmprestado.getAmigo();
+			
+			s.append("\n" + amigo.getNome() + " - pegou - ");
+			s.append(item.getTitulo() + " - emprestado e tem - ");			
+			s.append(diasRestantes(item, amigo) + " - dias para devolver.\n");
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna uma lista de itens que estejam emprestados
+	 * que tenham o mesmo título informado.
+	 * @param titulo - titulo para verificação
+	 * @return Uma lista de Itens caso exista ao menos um.
+	 * @throws ItemNotFoundException - caso o item não pertença a lista de emprestados
+	 * */
+	public List<Item> getItem(String titulo) throws ItemNotFoundException {
+		List<Item> itens = new ArrayList<>();
+		
+		for (ItemEmprestado itemEmprestado : emprestados) {
+			Item item = itemEmprestado.getItem();
+			if (titulo.equalsIgnoreCase(item.getTitulo())) {
+				itens.add(item);
+			}
+		}
+		if (itens.isEmpty()) {
+			throw new ItemNotFoundException();
+		}
+		return itens;
+	}
+	
+	/**
+	 * Retorna uma lista contendo todos os itens do usuario que estão emprestados
+	 * @return List 
+	 * */
+	public List<Item> getItensEmprestados() {
+		List<Item> itens = new ArrayList<>();
+		
+		for (ItemEmprestado item : emprestados) {
+			itens.add(item.getItem());
+		}
+		return itens;
+	}
+	
+	/**
+	 * Recupera todos os itens emprestados (Item, Amigo e Data)
+	 * @return List
+	 * */
+	public List<ItemEmprestado> getEmprestados() {
+		return new ArrayList<>(emprestados);
+	}
+	
+}

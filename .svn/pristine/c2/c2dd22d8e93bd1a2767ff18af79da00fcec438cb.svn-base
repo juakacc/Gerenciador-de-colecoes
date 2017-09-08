@@ -1,0 +1,77 @@
+package br.com.gerenciador.colecao.itemColecionavel;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.colecao.serie.Serie;
+
+/**
+ * Esta classe representa um jogo de tabuleiro
+ * */
+public class JogoDeTabuleiro extends Item {
+
+	/**
+	 * Constroi um jogo de tabuleiro e atribui os valores informados como parametro
+	 * @param titulo - titulo do jogo
+	 * @param estado - estado em que o jogo se encontra
+	 * @param preco - preco de compra do jogo
+	 * @param observacoes - alguma observação sobre o jogo caso exista
+	 * @param nivel - nivel de importancia para o usuario
+	 * */
+	public JogoDeTabuleiro(String titulo, String estado, 
+			double preco, String observacoes, int nivel) {
+		super(titulo, estado, preco, observacoes, nivel);
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para o Jogo de Tabuleiro
+	 * @return O código de hash
+	 * */
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este Jogo de tabuleiro. Os dois 
+	* são iguais se eles possuem o mesmo titulo e estado.
+	* @param obj - O objeto a comparar com este itme.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if(!(obj instanceof JogoDeTabuleiro))
+			return false;
+		
+		JogoDeTabuleiro outro = (JogoDeTabuleiro) obj;
+		
+		return super.equals(outro);
+	}
+	
+	/**
+	 * Representa um Jogo de tabuleiro como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		return super.toString();
+	}
+
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append("3;");
+		s.append(super.imprimirParaArquivo());
+		s.append(";" + getVezesEmprestado() + ";");
+		Seriado serie = getSerie();
+		s.append(serie == null ? "NULL" : serie.getNome() + ";" + ((serie instanceof Serie) ? 1 : 2));
+		
+		return s.toString();
+	}
+}

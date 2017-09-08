@@ -1,0 +1,244 @@
+package br.com.gerenciador.colecao;
+
+import br.com.gerenciador.amizade.Amigo;
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Seriado;
+import br.com.gerenciador.gerenciamento.FabricaItem;
+import br.com.gerenciador.interfaces.SerializadoIF;
+
+/**
+ * Esta classe define um item generico, caracteristicas comuns a todos os itens
+ * */
+public abstract class Item implements SerializadoIF {
+	
+	public static final int DVDCD = 1;
+	public static final int HQ = 2;
+	public static final int TABULEIRO = 3;
+	public static final int GAME = 4;
+	
+	private String titulo;
+	private String estado;
+	private double precoDeCompra;
+	private String observacoes;
+	private int numeroDeVezesEmprestado;	
+	private int nivelDeImportancia;
+	private Amigo amigo;
+	
+	private Seriado seriado; // pode ser uma serie ou trilogia
+	
+	/**
+	 * Constroi um item generico e atribui os valores informados como parametro
+	 * @param titulo - titulo do item
+	 * @param estado - estado em que o item se encontra
+	 * @param preco - preco de compra do item
+	 * @param observacoes - alguma observação sobre o item caso exista
+	 * @param nivel - nivel de importancia para o usuario
+	 * */
+	public Item(String titulo, String estado, double preco,
+			String observacoes, int nivel) {
+		this.titulo = titulo;
+		this.estado = estado;
+		this.precoDeCompra = preco;
+		if (observacoes == null || "".equalsIgnoreCase(observacoes.trim())) observacoes = "nenhuma";
+
+		this.observacoes = observacoes;
+		this.numeroDeVezesEmprestado = 0;
+		if (nivel < 1 || nivel > 5) nivel = 1;
+		this.nivelDeImportancia = nivel;
+		this.seriado = null;
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para o item
+	 * @return O código de hash para o item
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + FabricaItem.tipoItem(this);
+		result = prime * result + ((titulo == null) ? 0 : titulo.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este item. Dois itens 
+	* sao iguais se eles possuem o mesmo titulo e estado.
+	* @param obj - O objeto a comparar com este item.
+	* @return true se o objeto for igual ou false caso contrario.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (this.getClass() != obj.getClass()) {		
+			return false;
+		}
+								
+		Item outro = (Item) obj;
+		return getTitulo().equalsIgnoreCase(outro.getTitulo());
+	}
+	
+	/**
+	 * Representa um item como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append("Titulo = " + getTitulo());
+		s.append(", Estado = " + getEstado());
+		s.append(", Preco De Compra = R$ " + getPrecoDeCompra());
+		s.append(", Observacoes = " + getObservacoes());
+		
+		s.append(isDisponivel() ? "\nDISPONIVEL" : "\nINDISPONIVEL");
+		
+		s.append(", Estrelas: " + estrelas());
+		
+		if (getAmigo() != null) {
+			s.append(", Amigo = " + getAmigo().getNome());
+		}
+		s.append(";");
+		return s.toString();
+	}
+
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append(getTitulo() + ";");
+		s.append(getEstado() + ";");
+		s.append(getPrecoDeCompra() + ";");
+		s.append(getObservacoes() + ";");
+		s.append("" + getNivelDeImportancia());
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Recupera o titulo do item
+	 * @return String titulo
+	 * */
+	public String getTitulo() {
+		return titulo;
+	}
+
+	/**
+	 * Recupera o estado em que o item está (novo, usado...)
+	 * @return String estado
+	 * */
+	public String getEstado() {
+		return estado;
+	}
+
+	/**
+	 * Recupera o preco pelo qual o item foi comprado
+	 * @return Double preco de compra
+	 * */
+	public double getPrecoDeCompra() {
+		return precoDeCompra;
+	}
+
+	/**
+	 * Recupera as observações que o usuario fez sobre o item
+	 * @return String observações
+	 * */
+	public String getObservacoes() {
+		return observacoes;
+	}
+	
+	/**
+	 * Altera as observações de acordo com as que foram informadas.
+	 * @param obs - novas observações
+	 * */
+	public void setObservacao(String obs) {
+		this.observacoes = obs;
+	}
+	
+	/**
+	 * Recupera disponibilidade
+	 * @return true se o item etiver disponivel para emprestimos ou false caso contrario
+	 * */
+	public boolean isDisponivel() {
+		return getAmigo() == null;
+	}
+
+	/**
+	 * Recupera o numero de vezes dos emprestimos
+	 * @return int numero de vezes que o item foi emprestado
+	 * */
+	public int getVezesEmprestado() {
+		return numeroDeVezesEmprestado;
+	}
+
+	/**
+	 * Incrementa o numero de vezes que o item foi emprestado
+	 * */
+	public void setEmprestado() {
+		this.numeroDeVezesEmprestado++;
+	}
+	
+	/**
+	 * Altera o número de vezes que o item foi emprestado
+	 * @param n - numero de vezes
+	 * */
+	public void setEmprestado(int n) {
+		this.numeroDeVezesEmprestado = n;
+	}
+	
+	/**
+	 * Recupera o nivel de importancia do item para o usuario
+	 * @return int nivel de importancia
+	 * */
+	public int getNivelDeImportancia() {
+		return nivelDeImportancia;
+	}
+	
+	/**
+	 * Recupera o amigo que pegou este item emprestado
+	 * @return o amigo que está com o item caso ele esteja emprestado
+	 * */
+	public Amigo getAmigo() {
+		return amigo;
+	}
+	
+	/**
+	 * Altera o amigo que pegou o item emprestado
+	 * @param amigo - amigo que pegou emprestado
+	 * */
+	public void setAmigo(Amigo amigo) {
+		this.amigo = amigo;
+	}
+	
+	/**
+	 * @return A SERIE a qual o item pertence.
+	 * */
+	public Seriado getSeriado() {
+		return seriado;
+	}
+	
+	/**
+	 * Altera o Seriado que o item pertence.
+	 * @param seriado - novo Seriado
+	 * */
+	public void setSeriado(Seriado seriado) {
+		this.seriado = seriado;
+	}
+	
+	/**
+	 * Apenas para auxiliar no toString
+	 * Retorna estrelas de acordo com o nivel de importancia informado
+	 * @return String contendo o numero de estrelas para impressão
+	 * */
+	public String estrelas() {
+		StringBuilder s = new StringBuilder();
+		for (int i = 0; i < nivelDeImportancia; i++) {
+			s.append("*");
+		}
+		return s.toString();
+	}
+}

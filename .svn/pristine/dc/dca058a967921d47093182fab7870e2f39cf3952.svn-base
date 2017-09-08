@@ -1,0 +1,163 @@
+package br.com.gerenciador.desejo;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.interfaces.SerializadoIF;
+
+/**
+ * Classe para representação de um item que é 
+ * desejado pelo usuário.
+ * */
+public final class ItemDesejado implements SerializadoIF {
+
+	private Item item;
+	private Calendar data;
+	private String url;
+	
+	/**
+	 * Constrói e inicializa um novo ItemDesejado a partir
+	 * dos dados passados como parâmetro.
+	 * @param item - item desejado pelo usuário
+	 * @param data - data de lançamento desse item
+	 * @param url - URL onde se encontra a venda do item caso o usuário cadastre uma.
+	 * */
+	public ItemDesejado(Item item, Calendar data, String url) {
+		this.item = item;
+		if (data == null) {
+			data = Calendar.getInstance();
+			data.clear();
+		}
+		this.data = data;
+		this.url = url;
+	}
+	
+	/**
+	 * @return O código de hash para o item desejado
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((item == null) ? 0 : item.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este item. Dois itens desejados
+	* são iguais se eles possuem o mesmo item.
+	* @param obj - O objeto a comparar com este item.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof ItemDesejado)) {
+			return false;
+		}
+		
+		ItemDesejado outro = (ItemDesejado) obj;
+		return this.getItem().equals(outro.getItem());
+	}
+	
+	/**
+	 * Representa um ItemDesejado como String.
+	 * @return String representante
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(recuperarItemComoDesejo());
+		
+		Calendar c = Calendar.getInstance();
+		c.clear();
+		if (!c.equals(getData())) {
+			s.append("\nData de lançamento: " + 
+					(new SimpleDateFormat("dd/MM/yyyy").format(getData().getTime())));
+		}
+		if (url != null) {
+			s.append("\nURL: " + getUrl());
+		}
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(getItem().imprimirParaArquivo() + "\n");
+		s.append(getData().getTimeInMillis() + "\n");
+		if (getUrl() != null) {
+			s.append(getUrl());
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna um item de um determinado tipo que seja
+	 * um desejo do usuário em formato de String.
+	 * @return String formatada
+	 * */
+	private String recuperarItemComoDesejo() {
+		
+		Item item = getItem();
+		StringBuilder s = new StringBuilder();
+		
+		s.append("Título: " + item.getTitulo());
+		s.append(", Preço de Venda: R$ " + item.getPrecoDeCompra());
+		
+		if (item instanceof DvdCd) {
+			DvdCd aux = (DvdCd) item;
+			s.append("\nMarca: " + aux.getMarca());
+			s.append(", Conteúdo: " + aux.getConteudo());
+			
+		} else 
+			if (item instanceof Hq) {
+			Hq aux = (Hq) item;
+			s.append("\nNúmero: " + aux.getNumero());
+			s.append(", Editora: " + aux.getEditora());
+			s.append("\nUniverso: " + aux.getUniverso());
+			s.append(aux.getSaga() != null ? (", pertencente a saga: ") + aux.getSaga().toString() : ", não pertencente a saga");	
+			
+		} else 
+			if (item instanceof JogoDeVideoGame) {
+			JogoDeVideoGame aux = (JogoDeVideoGame) item;
+			s.append("\nConsole: " + aux.getConsole());
+//			s.append(aux.getDlc() != null ? "\nUtilizando a DLC: " + aux.getDlc().toString() : ", sem utilização de DLC");
+		}		
+		return s.toString();
+	}
+	
+	/**
+	 * Recupera o item desejado pelo usuário.
+	 * @return Item
+	 * */
+	public Item getItem() {
+		return item;
+	}
+
+	/**
+	 * Recupera a data de lançamento.
+	 * @return Calendar
+	 * */
+	public Calendar getData() {
+		return (Calendar) data.clone();
+	}
+	
+	/**
+	 * Recupera a URL do item.
+	 * @return String
+	 * */
+	public String getUrl() {
+		return url;
+	}
+}

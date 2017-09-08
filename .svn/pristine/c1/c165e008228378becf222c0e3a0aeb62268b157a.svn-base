@@ -1,0 +1,53 @@
+package br.com.gerenciador.amizade;
+
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.amizade.Amigo;
+
+public class AmigoTest {
+	
+	Amigo amigo;
+
+	@Before
+	public void setUp() {
+		amigo = new Amigo("Patrick", "Masculino", "Primo", "Rua Treze de maio", 99540871);
+	}
+	
+	@Test
+	public void testAmigo() {
+		
+		assertNotNull(amigo);		// nao está null
+		
+		assertEquals("Patrick", amigo.getNome());
+		
+		assertEquals("Masculino", amigo.getSexo());
+		assertEquals("Primo", amigo.getParentesco());
+		assertEquals("Rua Treze de maio", amigo.getEndereco());
+		assertEquals(99540871, amigo.getTelefone());
+	}
+	
+	@Test
+	public void testEquals(){
+		
+		Amigo amigo2 = new Amigo("Patrick", "masculino", "primo", "rua treze de maio", 99540871);
+		
+		assertTrue(amigo.equals(amigo2));
+		assertFalse(amigo.equals(null));
+		
+		amigo2 = new Amigo("Patrick", "masculino", "primo", "rua quartoze de maio", 99540871);
+		
+		assertFalse(amigo.equals(amigo2));
+	}
+			
+	@Test
+	public void testToString() {
+		
+		assertEquals("Nome = Patrick, Sexo = Masculino, Parentesco = Primo"
+				+ "\nEndereco = Rua Treze de maio, "
+				+ "Telefone = 99540871", amigo.toString());
+	}
+
+}

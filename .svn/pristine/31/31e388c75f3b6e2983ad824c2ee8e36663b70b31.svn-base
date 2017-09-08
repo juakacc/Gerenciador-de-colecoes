@@ -1,0 +1,224 @@
+package br.com.gerenciador.amizade;
+
+import java.util.*;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.interfaces.SerializadoIF;
+
+/**
+ * Classe usada para representar um objeto do tipo Amigo
+ * */
+public final class Amigo implements SerializadoIF {
+	
+	private String nome;
+	private String sexo;
+	private String parentesco;
+	private String endereco;
+	private long telefone;
+	private Set<Item> itensEmprestados;
+	
+	/**
+	 * Constroi um amigo atribuindo as caracteristicas informadas
+	 * @param nome - nome do amigo
+	 * @param sexo - sexo do amigo
+	 * @param parentesco - parentesco entre o usuario e o amigo
+	 * @param endereco - endereco do amigo
+	 * @param telefone - telefone do amigo
+	 * */
+	public Amigo(String nome, String sexo, String parentesco, 
+			String endereco, long telefone) {
+		
+		this.nome = nome;
+		this.sexo = sexo;
+		this.parentesco = parentesco;
+		this.endereco = endereco;
+		this.telefone = telefone;
+		this.itensEmprestados = new HashSet<>();
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para o amigo
+	 * @return O código de hash para o amigo
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((endereco == null) ? 0 : endereco.hashCode());
+		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este amigo. Dois amigos 
+	* são iguais se eles possuem o mesmo nome e o mesmo endereço.
+	* @param obj - O objeto a comparar com este amigo.
+	* @return true se o objeto for igual ou false caso contrário.
+	* */	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof Amigo))
+			return false;
+		
+		Amigo outro = (Amigo) obj;
+			
+		return this.getNome().equalsIgnoreCase(outro.getNome()) &&
+					this.getEndereco().equalsIgnoreCase(outro.getEndereco());
+	}
+	
+	/**
+	* Representa um amigo como String
+	* @return String de representação
+	* */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append("Nome = " + getNome());
+		s.append(", Sexo = " + getSexo());
+		s.append(", Parentesco = " + getParentesco());
+		s.append("\nEndereco = " + getEndereco());
+		s.append(", Telefone = " + getTelefone());
+		
+		if (!itensEmprestados.isEmpty()) {
+			s.append("\nItens Emprestados = [ ");
+			
+			Iterator<Item> itens = itensEmprestados.iterator();	
+			while (itens.hasNext()) {
+				s.append(itens.next().getTitulo());
+				if (itens.hasNext()) {
+					s.append(" ; ");
+				}
+			}
+			s.append(" ]");
+		}
+		return s.toString();
+	}
+	
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		
+		s.append(getNome() + ";");
+		s.append(getSexo() + ";");
+		s.append(getParentesco() + ";");
+		s.append(getEndereco() + ";");
+		s.append(getTelefone() + "");
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Recupera o nome do amigo
+	 * @return String nome
+	 * */
+	public String getNome() {
+		return nome;
+	}
+	
+	/**
+	 * @param nome the nome to set
+	 */
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	/**
+	 * Recupera o sexo do amigo
+	 * @return String sexo
+	 * */
+	public String getSexo() {
+		return sexo;
+	}
+	
+	/**
+	 * @param sexo the sexo to set
+	 */
+	public void setSexo(String sexo) {
+		this.sexo = sexo;
+	}
+
+	/**
+	 * Recupera o parentesco do amigo
+	 * @return String parentesco
+	 * */
+	public String getParentesco() {
+		return parentesco;
+	}
+	
+	/**
+	 * @param parentesco the parentesco to set
+	 */
+	public void setParentesco(String parentesco) {
+		this.parentesco = parentesco;
+	}
+
+	/**
+	 * Recupera o endereço do amigo
+	 * @return String endereco
+	 * */
+	public String getEndereco() {
+		return endereco;
+	}
+	
+	/**
+	 * @param endereco the endereco to set
+	 */
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+
+	/**
+	 * Recupera o telefone do amigo
+	 * @return int telefone
+	 * */
+	public long getTelefone() {
+		return telefone;
+	}
+
+	/**
+	 * @param telefone the telefone to set
+	 */
+	public void setTelefone(long telefone) {
+		this.telefone = telefone;
+	}
+
+	/**
+	 * Recupera a lista de itens que estao com esse amigo
+	 * @return uma lista com esses itens
+	 * */
+	public Set<Item> getItensEmprestados() {
+		return itensEmprestados;
+	}
+	
+	/**
+	 * Metodo para adicionar itens a lista de itens 
+	 * emprestados que estao com esse amigo
+	 * @param item - item a ser adicionado
+	 * */
+	public void adicionarItem(Item item) {
+		if (itensEmprestados.add(item)) {
+			item.setAmigo(this);
+		}
+	}
+	
+	/**
+	 * Metodo para remover itens da lista de itens 
+	 * emprestados que estao com esse amigo
+	 * @param item - item a ser removido
+	 * */
+	public void removerItem(Item item) {
+		if (itensEmprestados.remove(item)) {
+			item.setAmigo(null);
+		}
+	}
+	
+}

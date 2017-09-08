@@ -1,0 +1,15 @@
+package br.com.gerenciador.exceptions;
+
+public class DlcNotFoundException extends Exception {
+
+	private static final long serialVersionUID = 1L;
+
+	public DlcNotFoundException() {
+		super("A DLC não foi encontrada!");
+	}
+
+	public DlcNotFoundException(String message) {
+		super(message);
+	}
+
+}

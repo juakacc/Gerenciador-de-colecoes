@@ -1,0 +1,86 @@
+package br.com.gerenciador.emprestimo;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.amizade.Amigo;
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeTabuleiro;
+import br.com.gerenciador.emprestimo.ItemEmprestado;
+
+public class ItemEmprestadoTest {
+	
+	ItemEmprestado item;
+	Amigo amigo;
+	Item jogo;	// apenas a referencia
+
+	@Before
+	public void setUp() throws Exception {
+		
+		amigo = new Amigo("Patrick", "Masculino", "Primo", "Rua Treze de maio", 99540871);
+		jogo = new JogoDeTabuleiro("Dama", "novo", 9.99, "nenhuma", 5);
+		item = new ItemEmprestado(jogo, amigo, 10);
+	}
+
+	@Test
+	public void testItemEmprestado() {
+		
+		assertEquals(jogo, item.getItem());
+		assertEquals(amigo, item.getAmigo());
+		
+	}
+
+	@Test
+	public void testEqualsObject() {
+		
+		Amigo amigo2 = new Amigo("Maria", "feminino", "irma", "Frei Ibiapina", 1190987654);
+		ItemEmprestado aux = new ItemEmprestado(jogo, amigo2, 8);
+		
+		assertFalse(item.equals(aux));		// amigos diferentes
+		
+		amigo2 = new Amigo("Patrick", "Masculino", "Primo", "Rua Treze de maio", 99540871);
+		aux = new ItemEmprestado(jogo, amigo2, 9);
+		
+		assertTrue(item.equals(aux));		// mesmos amigos
+		
+	}
+
+	@Test
+	public void testToString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append("Item: " + jogo.toString() + "\n");
+		s.append("Amigo: " + amigo.toString() + "\n");
+		s.append("Data do Emprestimo: " + item.getDataDoEmprestimo().getTime());
+		s.append(" - Data da Entrega: " + item.getDataDaEntrega().getTime());
+		
+		assertEquals(s.toString(), item.toString());
+	}
+
+	@Test
+	public void testGetItem() {
+		
+		Item aux = item.getItem();
+		assertTrue(aux != null);
+		assertEquals(jogo, aux);
+		
+		Item jogo2 = new JogoDeTabuleiro("Xadrez", "novo", 9.99, "nenhuma", 5);
+		assertFalse(aux.equals(jogo2));
+	}
+
+	@Test
+	public void testGetAmigo() {
+		
+		Amigo aux = item.getAmigo();
+		assertTrue(aux != null);
+		assertEquals(amigo, aux);
+		
+		Amigo amigo2 = new Amigo("Maria", "feminino", "irma", "Frei Ibiapina", 1190987654);
+		assertFalse(aux.equals(amigo2));
+	}
+
+}

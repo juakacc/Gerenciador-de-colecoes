@@ -1,0 +1,158 @@
+package br.com.gerenciador.emprestimo;
+
+import java.util.Calendar;
+
+import br.com.gerenciador.amizade.Amigo;
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.interfaces.SerializadoIF;
+
+/**
+ * Esta classe representa um item da colecao que está emprestado,
+ * apenas para encapsular algumas informações adicionais.
+ * Como o Item, o Amigo, a data em que ele foi emprestado e a 
+ * data prevista para a entrega.
+ * */
+public class ItemEmprestado implements SerializadoIF {
+
+	private Item item;
+	private Amigo amigo;
+	private Calendar dataDoEmprestimo;
+	private Calendar dataDaEntrega;
+	
+	/**
+	 * Constroi um item que está emprestado a partir das informações fornecidas
+	 * @param item - item que foi emprestado
+	 * @param amigo - amigo que pegou o item emprestado
+	 * @param dias - prazo de dias a partir da data atual para que o amigo devolva o item
+	 * */
+	public ItemEmprestado(Item item, Amigo amigo, int dias) {
+		this(item, amigo);
+		this.dataDoEmprestimo = Calendar.getInstance();	
+		
+		if (dias == 0) 
+			dias = 15;
+		this.dataDaEntrega = Calendar.getInstance();
+		this.dataDaEntrega.add(Calendar.DAY_OF_MONTH, dias);	// a data que ele pegou + o prazo que o usuario deu
+	}
+
+	/**
+	 * Constrói um item emprestado a partir das informações passadas como
+	 * parâmetro. Utilizado para inicialização do sistemas onde as duas 
+	 * datas utilizadas já estão definidas.
+	 * @param item - item emprestado
+	 * @param amigo - amigo que está com ele
+	 * @param emprestimo - Data que o amigo pegou emprestado
+	 * @param entrega - Data para a prevista entrega
+	 * */
+	public ItemEmprestado(Item item, Amigo amigo, Calendar emprestimo, Calendar entrega) {
+		this(item, amigo);
+		this.dataDoEmprestimo = emprestimo;
+		this.dataDaEntrega = entrega;
+	}
+	
+	/**
+	 * Constrói um item que está emprestado a partir do item e do amigo
+	 * @param item
+	 * @param amigo
+	 * */
+	public ItemEmprestado(Item item, Amigo amigo) {
+		this.item = item;
+		this.amigo = amigo;
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para o item emprestado
+	 * @return O código de hash para o item emprestado
+	 * */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((amigo == null) ? 0 : amigo.hashCode());
+		result = prime * result + ((item == null) ? 0 : item.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com este item. Dois itens emprestados
+	* são iguais se eles possuem o mesmo item e o mesmo amigo.
+	* @param obj - O objeto a comparar com este item.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof ItemEmprestado)) 
+			return false;
+		
+		ItemEmprestado outro = (ItemEmprestado) obj;
+		
+		return this.getItem().equals(outro.getItem()) && 
+				this.getAmigo().equals(outro.getAmigo());
+	}
+
+	/**
+	 * Representa um item emprestado como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append("Item: " + getItem().toString() + "\n");
+		s.append("Amigo: " + getAmigo().toString() + "\n");
+		s.append("Data do Emprestimo: " + getDataDoEmprestimo().getTime());
+		s.append(" - Data da Entrega: " + getDataDaEntrega().getTime());
+		
+		return s.toString();
+	}
+
+	/**
+	 * Método que retorna uma String para auxiliar na persistencia
+	 * de dados.
+	 * @return A string para gravação
+	 * */
+	@Override
+	public String imprimirParaArquivo() {
+		StringBuilder s = new StringBuilder();
+		
+		s.append(getItem().imprimirParaArquivo() + "\n");
+		s.append(getAmigo().imprimirParaArquivo() + "\n");
+		s.append(getDataDoEmprestimo().getTimeInMillis() + "\n");
+		s.append(getDataDaEntrega().getTimeInMillis());
+		
+		return s.toString();
+	}
+
+	/**
+	 * Recupera o Item
+	 * @return item
+	 * */
+	public Item getItem() {
+		return item;
+	}
+
+	/**
+	 * Recupera o amigo
+	 * @return amigo
+	 * */
+	public Amigo getAmigo() {
+		return amigo;
+	}
+
+	/**
+	 * Retorna a data que o item foi empretado
+	 * @return Calendar
+	 * */
+	public Calendar getDataDoEmprestimo() {
+		return dataDoEmprestimo;
+	}
+
+	/**
+	 * Retorna a data prevista para que o amigo devolta o item
+	 * @return Calendar
+	 * */
+	public Calendar getDataDaEntrega() {
+		return dataDaEntrega;
+	}
+}

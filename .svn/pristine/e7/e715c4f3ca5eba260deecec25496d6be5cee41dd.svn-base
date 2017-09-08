@@ -1,0 +1,127 @@
+package br.com.gerenciador.colecao.trilogia;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.DvdCd;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeTabuleiro;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeVideoGame;
+
+public class RepositorioTrilogiaTest {
+
+	RepositorioTrilogia trilogias;
+	Trilogia t1, t2, t3;
+	
+	@Before
+	public void setUp() throws Exception {
+		trilogias = RepositorioTrilogia.getInstancia();
+		
+		t1 = new Trilogia("Tabuleiros", Item.TABULEIRO);
+		JogoDeTabuleiro jogo1 = new JogoDeTabuleiro("dama", "novo", 9, null, 5);
+		JogoDeTabuleiro jogo2 = new JogoDeTabuleiro("xadrez", "novo", 15.99, null, 3);
+		JogoDeTabuleiro jogo3 = new JogoDeTabuleiro("sudoku", "usado", 3, "rabiscado", 4);
+		t1.adicionarItem(jogo1);
+		t1.adicionarItem(jogo2);
+		t1.adicionarItem(jogo3);
+		
+		t2 = new Trilogia("Senhor dos aneis", Item.DVDCD);
+		DvdCd dvd1 = new DvdCd("Senhor dos aneis 01", "novo", 30, "", 4, "Date", "1Temporada", true);
+		DvdCd dvd2 = new DvdCd("Senhor dos aneis 02", "novo", 30, "", 4, "Date", "2Temporada", false);
+		t2.adicionarItem(dvd1);
+		t2.adicionarItem(dvd2);
+		
+		t3 = new Trilogia("Jogos", Item.GAME);
+		JogoDeVideoGame j1 = new JogoDeVideoGame("Mario Bros", "novo", 15, null, 5, "nitendo", true, null);
+		JogoDeVideoGame j2 = new JogoDeVideoGame("Mario Tenis", "novo", 20, null, 5, "nitendo", true, null);
+		t3.adicionarItem(j1);
+		t3.adicionarItem(j2);
+	}
+
+	@Test
+	public void testAdicionarTrilogia() {
+		assertTrue(trilogias.isVazio());
+		assertTrue(trilogias.adicionarTrilogia(t1));
+		assertEquals(1, trilogias.totalTrilogias());
+		
+		assertTrue(trilogias.adicionarTrilogia(t2));
+		assertEquals(2, trilogias.totalTrilogias());
+		
+		assertTrue(trilogias.adicionarTrilogia(t3));
+		assertEquals(3, trilogias.totalTrilogias());
+		
+		/* repetida não adiciona */
+		assertFalse(trilogias.adicionarTrilogia(t1));
+		assertEquals(3, trilogias.totalTrilogias());
+		
+	}
+	
+	@Test
+	public void testRemoverTrilogia() {
+		trilogias.adicionarTrilogia(t1);
+		trilogias.adicionarTrilogia(t2);
+		trilogias.adicionarTrilogia(t3);
+		
+		assertFalse(trilogias.isVazio());
+		assertTrue(trilogias.removerTrilogia(t1));
+		assertEquals(2, trilogias.totalTrilogias());
+		
+		assertTrue(trilogias.removerTrilogia(t2));
+		assertEquals(1, trilogias.totalTrilogias());
+		
+		assertTrue(trilogias.removerTodas());
+		assertTrue(trilogias.isVazio());
+	}
+	
+	@Test
+	public void testGets() {
+		trilogias.adicionarTrilogia(t1);
+		trilogias.adicionarTrilogia(t2);
+		trilogias.adicionarTrilogia(t3);
+		
+		List<Trilogia> aux = new ArrayList<>();
+		aux.add(t1);
+		
+		try {
+			assertEquals(aux, trilogias.getTrilogia("Tabuleiros"));
+		} catch (Exception e) { fail(); }
+		
+		assertEquals(t3, trilogias.getTrilogia("Jogos", Item.GAME));
+		
+		aux = new ArrayList<>(Arrays.asList(t1, t2, t3));
+		assertTrue(aux.containsAll(trilogias.getTrilogias()));
+	}
+	
+	@Test
+	public void testPertence() {
+		trilogias.adicionarTrilogia(t1);
+		trilogias.adicionarTrilogia(t2);
+		trilogias.adicionarTrilogia(t3);
+		
+		assertTrue(trilogias.pertence(t1));
+		assertTrue(trilogias.pertence(t2));
+		
+		trilogias.removerTrilogia(t3);
+		assertFalse(trilogias.pertence(t3));
+	}
+
+	@Test
+	public void testToString() {
+		trilogias.adicionarTrilogia(t1);
+		trilogias.adicionarTrilogia(t2);
+		trilogias.adicionarTrilogia(t3);
+		
+		StringBuilder str = new StringBuilder();
+		str.append("\n" + t3.toString() + "\n");
+		str.append("\n" + t1.toString() + "\n");
+		str.append("\n" + t2.toString() + "\n");
+		
+		assertEquals(str.toString(), trilogias.toString());
+	}
+}

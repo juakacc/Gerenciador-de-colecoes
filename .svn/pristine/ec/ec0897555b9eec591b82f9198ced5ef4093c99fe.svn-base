@@ -1,0 +1,172 @@
+package br.com.gerenciador.amizade;
+
+import static org.junit.Assert.*;
+
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.amizade.MeusAmigos;
+import br.com.gerenciador.exceptions.AmigoNotFoundException;
+
+public class MeusAmigosTest {
+
+	MeusAmigos amigos;
+	Amigo amigo1, amigo2, amigo3, amigo4, amigo5;
+	
+	@Before
+	public void setUp() throws Exception {
+		amigos = MeusAmigos.getInstancia();
+		amigos.removerTodos();		// reseta a lista de amigos do usuário
+		amigo1 = new Amigo("João", "masculino", "primo", "rua 25 de março", 33319991);
+		amigo2 = new Amigo("Maria", "feminino", "irma", "Frei Ibiapina", 1190987654);
+		amigo3 = new Amigo("José", "masculino", "tio", "Sitio Aroeiras", 30028922);
+		amigo4 = new Amigo("Lucia", "feminino", "neta", "Rua de cima", 50507685);
+		amigo5 = new Amigo("Severino", "masculino", "sobrinho", "Campina Grande", 98887654);
+	}
+
+	@Test
+	public void testMeusAmigos() {
+		assertNotNull(amigos);
+	}
+
+	@Test
+	public void testAdicionarAmigo() {
+		
+		assertTrue(amigos.adicionarAmigo(amigo1));
+		assertEquals(1, amigos.totalDeAmigos());
+		
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo3);
+		assertEquals(3, amigos.totalDeAmigos());
+		
+		assertFalse(amigos.adicionarAmigo(amigo1));		// amigo repetido, nao adiciona
+		assertEquals(3, amigos.totalDeAmigos());
+		
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+		assertEquals(5, amigos.totalDeAmigos());
+		
+	}
+
+	@Test
+	public void testEditarAmigo() {
+		amigos.adicionarAmigo(amigo1);
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+		
+		assertTrue(amigos.editarAmigo(amigo2, amigo3));
+		
+		assertEquals(4, amigos.totalDeAmigos());
+		
+		Amigo amigo7 = new Amigo("Joãozin", "masculino", "pai", "Rua Duque de Caxias", 99235465);
+		
+		assertFalse(amigos.editarAmigo(amigo7, amigo5));		// amigo inexistente
+		
+		assertEquals(4, amigos.totalDeAmigos());
+		amigos.removerAmigo(amigo5);
+		assertTrue(amigos.editarAmigo(amigo3, amigo5));
+
+		assertEquals(3, amigos.totalDeAmigos());
+	}
+
+	@Test
+	public void testRemoverAmigo() {
+		amigos.adicionarAmigo(amigo1);
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo3);
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+
+		assertEquals(5, amigos.totalDeAmigos());
+		assertTrue(amigos.removerAmigo(amigo1));		// existente
+		assertEquals(4, amigos.totalDeAmigos());
+		
+		Amigo amigo6 = new Amigo("Joãozin", "masculino", "primo", "Rua sem nome", 98989898);
+		assertFalse(amigos.removerAmigo(amigo6));		// amigo inexistente
+
+		assertTrue(amigos.removerAmigo(amigo4));		// existente		
+		assertEquals(3, amigos.totalDeAmigos());
+
+	}
+
+	@Test
+	public void testPertence() {
+		amigos.adicionarAmigo(amigo1);
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo3);
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+		
+		assertTrue(amigos.pertence(amigo1));
+		amigos.removerAmigo(amigo3);
+		assertFalse(amigos.pertence(amigo3));
+		assertTrue(amigos.pertence(amigo4));
+		
+		Amigo joaozin = new Amigo("Joãozin", "masculino", "tio", "Rua de cima", 33769409);
+		assertFalse(amigos.pertence(joaozin));
+	}
+
+	@Test
+	public void testGetAmigo() {
+		amigos.adicionarAmigo(amigo1);
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo3);
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+		
+		List<Amigo> a = null;
+		try {
+			a = amigos.getAmigo("João");		// amigo cadastrado
+		} catch (AmigoNotFoundException e) {
+			fail();
+		}
+		assertTrue(a.get(0).equals(amigo1));
+		
+		try {
+			a = amigos.getAmigo("Bina");		// amigo inexistente
+			fail();
+		} catch (AmigoNotFoundException e) {
+			assertEquals("Amigo não foi encontrado!", e.getMessage());
+		}
+		
+		try {
+			a = amigos.getAmigo("Severino");		// amigo cadastrado
+		} catch (AmigoNotFoundException e) {
+			fail();
+		}
+		assertTrue(a.get(0).equals(amigo5));
+		assertFalse(a.get(0).equals(amigo2));
+	}
+
+	@Test
+	public void testToString() {
+		amigos.adicionarAmigo(amigo1);
+		amigos.adicionarAmigo(amigo2);
+		amigos.adicionarAmigo(amigo3);
+		amigos.adicionarAmigo(amigo4);
+		amigos.adicionarAmigo(amigo5);
+		
+		assertEquals("Nome = João, Sexo = masculino, Parentesco = primo"
+				+ "\nEndereco = rua 25 de março, Telefone = 33319991", amigo1.toString());
+		
+		List<Amigo> a = null;
+		try {
+			a = amigos.getAmigo("Severino");
+		} catch (AmigoNotFoundException e) {
+			fail();
+		}
+		assertTrue(a.get(0).toString().equals(amigo5.toString()));
+		
+		StringBuilder s = new StringBuilder();
+		List<Amigo> aux = amigos.todosAmigos();
+		
+		for (Amigo amigo : aux) {
+			s.append("\n" + amigo.toString() + "\n");
+		}
+		
+		assertEquals(s.toString(), amigos.toString());
+	}
+}

@@ -1,0 +1,182 @@
+package br.com.gerenciador.colecao.serie;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeTabuleiro;
+import br.com.gerenciador.colecao.itemColecionavel.JogoDeVideoGame;
+
+public class SerieTest {
+
+	Serie serie;
+	JogoDeTabuleiro jogo1, jogo2, jogo3;
+	
+	@Before
+	public void setUp() throws Exception {
+		serie = new Serie("Tabuleiros", Item.TABULEIRO, 3);
+		
+		jogo1 = new JogoDeTabuleiro("dama", "novo", 9, null, 5);
+		jogo2 = new JogoDeTabuleiro("xadrez", "novo", 15.99, null, 3);
+		jogo3 = new JogoDeTabuleiro("sudoku", "usado", 3, "rabiscado", 4);
+	}
+
+	@Test
+	public void testAdicionarItem() {
+		
+		JogoDeVideoGame novoJogo = new JogoDeVideoGame("Need For Speed", "novo", 50, null, 4, "ps3", false);
+		
+		/* tipo diferente não adiciona */
+		assertEquals(0, serie.totalCadastrados());
+		serie.adicionarItem(novoJogo);	
+		assertEquals(0, serie.totalCadastrados());
+		
+		serie.adicionarItem(jogo1);
+		assertEquals(1, serie.totalCadastrados());
+		assertEquals(serie, jogo1.getSeriado());
+		
+		serie.adicionarItem(jogo2);
+		assertEquals(2, serie.totalCadastrados());
+		assertEquals(serie, jogo2.getSeriado());
+		
+		serie.adicionarItem(jogo1);		// jogo repetido
+		assertEquals(2, serie.totalCadastrados());
+		
+		serie.adicionarItem(jogo3);
+		assertEquals(3, serie.totalCadastrados());
+		assertEquals(serie, jogo3.getSeriado());
+	}
+	
+	@Test
+	public void testRemoverItem() {
+		serie.adicionarItem(jogo1);
+		serie.adicionarItem(jogo2);
+		serie.adicionarItem(jogo3);
+		
+		assertEquals(3, serie.totalCadastrados());
+		
+		serie.removerItem(jogo1);
+		assertEquals(2, serie.totalCadastrados());
+		assertEquals(null, jogo1.getSeriado());
+		
+		serie.removerItem(jogo2);
+		assertEquals(1, serie.totalCadastrados());
+		assertEquals(null, jogo2.getSeriado());
+		
+		serie.removerItem(jogo1);	// inexistente
+		assertEquals(1, serie.totalCadastrados());
+		
+		serie.removerItem(jogo3);
+		assertEquals(0, serie.totalCadastrados());
+		assertEquals(null, jogo3.getSeriado());
+	}
+	
+	@Test
+	public void testEditarItem() {
+		
+		JogoDeVideoGame novoJogo = new JogoDeVideoGame("Need For Speed", "novo", 50, null, 4, "ps3", false);
+		
+		serie.adicionarItem(jogo1);
+		serie.adicionarItem(jogo2);
+		
+		assertTrue(serie.editarItem(jogo3, jogo2));
+		assertFalse(serie.editarItem(jogo1, jogo3));
+		
+		/* não edita por tipo diferente */
+		assertFalse(serie.editarItem(novoJogo, jogo1));
+		assertEquals(null, novoJogo.getSeriado());
+	}
+
+	@Test
+	public void testGets() {
+		serie.adicionarItem(jogo1);
+		serie.adicionarItem(jogo2);
+		serie.adicionarItem(jogo3);
+		
+		assertEquals(3, serie.totalCadastrados());
+		assertEquals(3, serie.getQuantItens());
+		assertEquals("Tabuleiros", serie.getNome());
+		assertEquals(3, serie.getTipo());
+		
+		List<Item> itens = new ArrayList<>();
+		itens.add(jogo3);
+		itens.add(jogo2);
+		itens.add(jogo1);
+		
+		List<Item> itensNaSerie = serie.getItens();
+		
+		assertTrue(itens.containsAll(itensNaSerie));
+	}
+	
+	@Test
+	public void testAlterandoQuantidade() {
+		serie.adicionarItem(jogo1);
+		serie.adicionarItem(jogo2);
+		serie.adicionarItem(jogo3);
+		
+		/* alterando para número menor do que o numero de cadastrados */
+		serie.setQuantItens(2);
+		
+		assertFalse(serie.getQuantItens() == 2);
+		assertTrue(serie.getQuantItens() == 3);
+		
+		/* alterando para número maior do que o numero de cadastrados */
+		serie.setQuantItens(4);
+		
+		assertTrue(serie.getQuantItens() == 4);
+		serie.setQuantItens(3);
+	}
+	
+	@Test
+	public void testEquals() {
+		Serie aux = new Serie("Jogos", Item.GAME, 3);
+		
+		assertFalse(aux.equals(serie));
+		
+		aux = new Serie("Tabuleiros", Item.TABULEIRO);
+		assertTrue(serie.equals(aux));
+		assertEquals(aux.hashCode(), serie.hashCode());
+	}
+	
+	@Test
+	public void testToString() {
+		serie.adicionarItem(jogo3);
+		serie.adicionarItem(jogo2);
+		serie.adicionarItem(jogo1);
+		
+		StringBuilder str = new StringBuilder();
+		
+		str.append("-> Série: Tabuleiros\n");
+		str.append(jogo3.toString() + "\n");
+		str.append(jogo2.toString() + "\n");
+		str.append(jogo1.toString() + "\n");
+		str.append("\nA série está completa! :D");
+		
+		assertEquals(str.toString(), serie.toString());
+	}
+	
+	@Test
+	public void testImprimirArquivo() {
+		StringBuilder str = new StringBuilder();
+		
+		str.append("3;");
+		str.append("Tabuleiros;");
+		str.append("3");
+		
+		assertEquals(str.toString(), serie.imprimirParaArquivo());
+	}
+	
+	@Test
+	public void testPertence() {
+		serie.adicionarItem(jogo3);
+		serie.adicionarItem(jogo2);
+		
+		assertTrue(serie.pertence(jogo2));
+		assertFalse(serie.pertence(jogo1));
+	}
+}

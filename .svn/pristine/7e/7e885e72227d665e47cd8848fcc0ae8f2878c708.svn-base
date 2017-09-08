@@ -1,0 +1,232 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.colecao.itemColecionavel.dlc.*;
+import br.com.gerenciador.colecao.itemColecionavel.saga.*;
+
+/**
+ * Classe para organizar o recolhimento de informações para a 
+ * criação de novos itens.
+ * */
+public final class FabricaItem {
+	
+	/**
+	 * Cria e retorna um novo item de acordo com o parametro recebido
+	 * @param tipo - 1 <= tipo <= 4
+	 * @return item
+	 * */
+	public static Item fabricarItem(int tipo) {
+		
+		switch (tipo) {
+		case Item.DVDCD:	
+			return criarDvdCd();
+		
+		case Item.HQ:
+			return criarHq();
+			
+		case Item.TABULEIRO:	
+			return criarJogoDeTabuleiro();
+			
+		case Item.GAME:	
+			return criarJogoDeVideoGame();
+		}
+		return null;
+	}
+	
+	/**
+	 * Recupera os dados e cria um novo jogo de tabuleiro
+	 * @return jogo de tabuleiro
+	 * */
+	private static JogoDeTabuleiro criarJogoDeTabuleiro() {
+		String titulo = "", estado = "", obs = "";
+		double preco = 0;
+		int nivel = 0;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		estado = recuperarString("Informe estado...................: ");	
+		preco = recuperarDouble("Informe preco de compra(ex: 5.50): ");
+		obs = recuperarString("Informe alguma observacao........: ");
+		
+		while (nivel < 1 || nivel > 5) {
+			nivel = recuperarInt("Informe qual o nivel de importancia(1, 2, 3, 4 ou 5): ");
+		}
+		return new JogoDeTabuleiro(titulo, estado, preco, obs, nivel);
+	}
+	
+	/**
+	 * Recupera os dados e cria um novo HQ
+	 * @return HQ
+	 * */
+	private static Hq criarHq() {
+		String titulo = "", editora = "", universo = "", estado = "", obs = "";
+		int numero = 0, nivel = 0;
+		double preco = 0;
+		boolean lido = false;
+		
+		titulo = recuperarString("Informe título...................: ");
+		numero = recuperarInt("Informe número...................: ");
+		editora = recuperarString("Informe editora..................: ");
+		universo = recuperarString("Informe universo.................: ");
+		estado = recuperarString("Informe estado...................: ");		
+		preco = recuperarDouble("Informe preço de compra(ex: 5.50): ");
+		obs = recuperarString("Informe alguma observação........: ");
+		lido = recuperarBoolean("Já leu o HQ(1-sim/2-nao)? ");
+		
+		while (nivel < 1 || nivel > 5) {
+			nivel = recuperarInt("Informe qual o nivel de importância(1, 2, 3, 4 ou 5): ");
+		}
+		
+		Hq hq = new Hq(titulo, estado, preco, obs, nivel, numero, editora, universo, lido);
+				
+		if (recuperarBoolean("Informe se pertence a uma saga (1-sim/2-não)? ")) {	
+			adicionarSaga(hq);
+		}
+		
+		return hq;
+	}
+	
+	public static void adicionarSaga(Hq hq) {
+		RepositorioSaga sagas = RepositorioSaga.getInstancia(); 
+		Saga saga;
+		int numeroNaSaga;
+		
+		String nomeDaSaga = recuperarString("Informe nome....: ");
+		saga = new Saga(nomeDaSaga);
+		
+		if (sagas.pertence(saga)) {		// essa saga já existe, tento adicionar nela
+			saga = sagas.getSagaPorNome(nomeDaSaga);
+			do {
+				numeroNaSaga = recuperarInt("Informe o numero: ");
+			} while (numeroNaSaga > saga.tamanhoDaSaga() || numeroNaSaga < 1);
+			saga.adicionarItemNaSaga(hq, numeroNaSaga);
+		
+		} else {			// tenho que criar uma nova saga
+			int quantidadeHq;
+			do {
+				quantidadeHq  = recuperarInt("Quantos HQ's essa Saga tem? ");
+			} while(quantidadeHq < 1);
+			
+			saga = new Saga(nomeDaSaga, quantidadeHq);
+			do {
+				numeroNaSaga = recuperarInt("Informe o numero: ");
+			} while (numeroNaSaga > saga.tamanhoDaSaga() || numeroNaSaga < 1);
+			
+			if (saga.adicionarItemNaSaga(hq, numeroNaSaga)) {
+				if (sagas.adicionarSaga(saga)) {
+					System.out.println("Nova saga cadastrada...");
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Recupera os dados e cria um novo DVD/CD
+	 * @return DVD/CD
+	 * */
+	private static DvdCd criarDvdCd() {
+		String titulo = "", estado = "", obs = "", marca = "", conteudo = "";
+		boolean assistido = false;
+		double preco = 0;
+		int nivel = 0;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		estado = recuperarString("Informe estado...................: ");	
+		preco = recuperarDouble("Informe preco de compra(ex: 5.50): ");
+		obs = recuperarString("Informe alguma observacao........: ");
+		marca = recuperarString("Informe marca....................: ");
+		conteudo = recuperarString("Informe conteudo.................: ");
+		assistido = recuperarBoolean("Ja assistiu/escutou o DVD/CD (1-sim/2-nao)? ");
+	
+		while (nivel < 1 || nivel > 5) {
+			nivel = recuperarInt("Informe qual o nivel de importancia(1, 2, 3, 4 ou 5): ");
+		}
+		return new DvdCd(titulo, estado, preco, obs, nivel, marca, conteudo, assistido);
+	}
+	
+	/**
+	 * Recupera os dados e cria um novo jogo de video game
+	 * @return jogo de video game 
+	 * */
+	private static JogoDeVideoGame criarJogoDeVideoGame() {
+		String titulo = "", estado = "", obs = "", console = "";
+		double preco = 0;
+		int nivel = 0;
+		boolean zerado = false;
+		
+		titulo = recuperarString("Informe titulo...................: ");
+		estado = recuperarString("Informe estado...................: ");
+		preco = recuperarDouble("Informe preco de compra(ex: 5.50): ");
+		
+		obs = recuperarString("Informe alguma observacao........: ");
+		console = recuperarString("Informe console..................: ");		
+		zerado = recuperarBoolean("Esse jogo ja foi zerado(1-sim/2-nao)? ");
+		
+		while (nivel < 1 || nivel > 5) {
+			nivel = recuperarInt("Informe qual o nivel de importancia(1, 2, 3, 4 ou 5): ");
+		}
+		
+		JogoDeVideoGame jogo = new JogoDeVideoGame(titulo, estado, preco, obs, nivel, console, zerado);
+		
+		if (recuperarBoolean("Esse jogo possui uma DLC(1-sim/2-nao)? ")) {
+			adicionaDlc(jogo);
+//			RepositorioDlc minhasDlcs = RepositorioDlc.getInstancia();
+//			Dlc dlc;
+//			do {
+//				String tituloDlc = "", localizacao = "";
+//				
+//				tituloDlc = recuperarString("Informe o titulo da DLC.: ");
+//				localizacao = recuperarString("Informe a localizacao...: ");
+//				
+//				dlc = new Dlc(tituloDlc, localizacao, jogo);
+//				
+//				if (minhasDlcs.adicionarDlc(dlc)) {
+//					System.out.println("Nova DLC adicionada...");
+//				}
+//			} while (recuperarBoolean("Deseja adicionar mais alguma DLC (1-sim/2-não)? "));
+		}
+		
+		return jogo; 	
+	}
+	
+	public static void adicionaDlc(JogoDeVideoGame jogo) {
+		RepositorioDlc minhasDlcs = RepositorioDlc.getInstancia();
+		Dlc dlc;
+		String tituloDlc = "", localizacao = "";
+		do {
+			tituloDlc = recuperarString("Informe o titulo da DLC.: ");
+			localizacao = recuperarString("Informe a localizacao...: ");
+			
+			dlc = new Dlc(tituloDlc, localizacao, jogo);
+			
+			if (minhasDlcs.adicionarDlc(dlc)) {
+				System.out.println("Nova DLC adicionada...");
+			}
+		} while (recuperarBoolean("Deseja adicionar mais alguma DLC (1-sim/2-não)? "));
+	}
+	
+	/**
+	 * Determina de qual tipo o item informa é.
+	 * 1 - DVD/CD
+	 * 2 - HQ
+	 * 3 - Jogo de tabuleiro
+	 * 4 - Jogo de video game
+	 * @param item
+	 * @return Número correspondente ao tipo.
+	 * */
+	public static int tipoItem(Item item) {
+		int tipo;
+		if (item instanceof DvdCd) {
+			tipo = 1;
+		} else if (item instanceof Hq) {
+			tipo = 2;
+		} else if (item instanceof JogoDeTabuleiro) {
+			tipo = 3;
+		} else {
+			tipo = 4;
+		}
+		return tipo;
+	}
+
+}

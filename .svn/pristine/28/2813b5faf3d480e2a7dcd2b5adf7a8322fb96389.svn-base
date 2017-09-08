@@ -1,0 +1,253 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Menu.*;
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+
+import java.util.List;
+
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.colecao.itemColecionavel.*;
+import br.com.gerenciador.exceptions.ItemNotFoundException;
+import br.com.gerenciador.interfaces.GerenciamentoIF;
+
+/**
+ * Classe para interar com o usuário do sistema com relação a atividades 
+ * que sejam relacionadas diretamente com o gerenciamento de itens
+ * */
+public class GerenciaItem implements GerenciamentoIF {
+	
+	private static Acervo acervo;
+		
+	/**
+	 * Constrói o gerenciador e 
+	 * inicializa o acervo de itens do usuario
+	 * */
+	public GerenciaItem() {
+		acervo = Acervo.getInstancia();
+	}
+	
+	/**
+	 * Método para delegar o que deve ser feito a partir da escolha do usuário
+	 * @param opcao - opção escolhida pelo usuario
+	 * */
+	public void selecionar(int opcao) {
+		int escolha = 0;
+		Item item;
+		
+		switch (opcao) {
+		case 1:		// adicionar item
+			
+			do {
+				menuTipoItem();
+				escolha = recuperarInt("Qual o tipo do item(1,2,3,4)? ");
+					
+				if (escolha == 0) {
+					break;
+				} else if (escolha >= 1 && escolha <= 4) {
+					item = FabricaItem.fabricarItem(escolha);
+					
+					if (acervo.adicionarItem(item)) {
+						System.out.println("Item adicionado...");
+					
+						do {
+							escolha = recuperarInt("O item pertence a uma Trilogia ou a uma Série(1-Série/2-Trilogia/0-Nenhuma)? ");
+							if (escolha == 0) {
+								break;
+							} else if (escolha == 1) {
+								GerenciaSerie.criarSerie(item);
+								break;
+							} else if (escolha == 2) {	
+								GerenciaTrilogia.criarTrilogia(item);
+								break;
+							} else {
+								System.out.println(ENTRADA_INVALIDA);
+							}
+						} while (true);
+					}
+					break;
+				} else {
+					System.out.println(ENTRADA_INVALIDA);
+				}
+			} while(true);
+			break;
+			
+		case 2:		// editar item
+			
+			try {
+				item = recuperarItemDisponivel();
+				if (item instanceof DvdCd) {
+					escolha = 1;
+				} else if (item instanceof Hq) {
+					escolha = 2;
+				} else if (item instanceof JogoDeTabuleiro) {
+					escolha = 3;
+				} else {
+					escolha = 4;
+				}
+				System.out.println("\nNovas informações: "); 
+				Item novasInformacoes = FabricaItem.fabricarItem(escolha);
+				acervo.editarItem(item, novasInformacoes);
+
+			} catch (ItemNotFoundException e) {
+				System.err.println(e.getMessage());
+			}
+			break;
+				
+		case 3:		// remover item
+			
+			if (acervo.disponiveisIsVazio()) {
+				System.out.println("Nenhum item cadastrado está disponível... Realize um cadastro!");
+			} else {
+				menuRemoverItens();
+				do {
+					escolha = recuperarInt("O que deseja fazer(0,1,2)? ");
+					if (escolha == 0) {
+						break;
+					} else if (escolha == 1 || escolha == 2) {
+						removerItem(escolha);
+						break;
+					} else {
+						System.out.println(ENTRADA_INVALIDA);
+					}
+				} while (true);
+			}
+			break;
+			
+		case 4:		// exibir item
+			do {
+				menuExibirItens();
+				escolha = recuperarInt("O que deseja fazer(0,1,2,3,4)? ");
+				
+				if (escolha == 0) {	
+					break;
+				} else if (escolha >= 1 && escolha <= 4) {
+					imprimirItem(escolha);
+					break;
+				} else {
+					System.out.println(ENTRADA_INVALIDA);
+				}
+			} while (true);
+			
+			break;
+			
+		case 5:		// exibir itens repetidos no acervo
+			acervo.veritensRepetidos();
+			break;
+		case 0:	
+			break;
+		}
+	}
+	
+	/**
+	 * Impressão de acordo com a escolha do usuário.
+	 * @param opcao - opção da forma de impressão (0 < opcao < 5)
+	 * */
+	private void imprimirItem(int opcao) {
+		
+		switch (opcao) {
+		
+		case 1:	// especifico
+			String titulo;
+			titulo = recuperarString("Deseja imprimir especificações de qual item (título completo)? ");
+			acervo.verItem(titulo);
+			break;
+			
+		case 2:	// por categoria
+			acervo.verPorCategoria();
+			break;
+		
+		case 3:	//	mais emprestados
+			acervo.verPorMaisEmprestado();
+			break;
+		
+		case 4:	// mais importantes 
+			acervo.verPorMaisImportante();
+			break;
+		}
+	}
+	
+	/**
+	 * Remove item do acervo de acordo com a escolha do usuário.
+	 * @param opcao - forma de remoção (1 < opcao < 2)
+	 * */
+	private void removerItem(int opcao) {
+		if (opcao == 1) {
+			Item item;
+			try {
+				item = recuperarItemDisponivel();
+				if (acervo.removerItem(item))
+					System.out.println("Item removido...");
+			} catch (ItemNotFoundException e) {
+				System.err.println(e.getMessage());
+			}
+		} else {
+			if (acervo.removerTodos()) {
+				System.out.println("Itens disponíveis removidos...");
+			}
+		}
+	}
+	
+	/**
+	 * Método para que o usuário escolha um item dentre os disponiveis
+	 * em seu acervo.
+	 * @return item escolhido pelo usuário
+	 * @throws ItemNotFoundException - caso o usuário não escolha nenhum
+	 * dos itens disponiveis.
+	 * */
+	public static Item recuperarItemDisponivel() throws ItemNotFoundException {
+		String titulo;
+		List<Item> itens;
+		int escolha;
+		
+		titulo = recuperarString("Título do item: ");
+		itens = acervo.getItemDisponivel(titulo);
+		
+		System.out.println("\n ID");
+		for (int i = 0; i < itens.size(); i++) {
+			System.out.println("[" +(i+1)+ "] - " + itens.get(i).toString());
+		}
+		System.out.println("-----------------------------");
+		
+		do {
+			escolha = recuperarInt("Qual o ID do item(0 - sair)? ");
+			if (escolha == 0) {
+				throw new ItemNotFoundException("Nenhum item escolhido!");
+			}
+		} while (escolha < 1 || escolha > itens.size());
+		
+		Item item = itens.get(escolha - 1);
+		return item;
+	}
+	
+	/**
+	 * Método para que o usuário escolha um item em seu acervo.
+	 * Disponivel ou não.
+	 * @return item escolhido pelo usuário
+	 * @throws ItemNotFoundException - caso o usuário não escolha nenhum
+	 * dos itens disponiveis.
+	 * */
+	public static Item recuperarItemAll() throws ItemNotFoundException {
+		String titulo;
+		List<Item> itens;
+		int escolha;
+		
+		titulo = recuperarString("Título do item: ");
+		itens = acervo.getItemAll(titulo);
+		
+		System.out.println("\n ID");
+		for (int i = 0; i < itens.size(); i++) {
+			System.out.println("[" +(i+1)+ "] - " + itens.get(i).toString());
+		}
+		System.out.println("-----------------------------");
+		
+		do {
+			escolha = recuperarInt("Qual o ID do item(0 - sair)? ");
+			if (escolha == 0) {
+				throw new ItemNotFoundException("Nenhum item escolhido!");
+			}
+		} while (escolha < 1 || escolha > itens.size());
+		
+		Item item = itens.get(escolha - 1);
+		return item;
+	}
+}

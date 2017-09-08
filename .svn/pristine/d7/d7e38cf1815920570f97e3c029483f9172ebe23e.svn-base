@@ -1,0 +1,8 @@
+package br.com.gerenciador.interfaces;
+
+public interface GerenciamentoIF {
+
+	public static final String ENTRADA_INVALIDA = new String("Opcão indisponível! Tente novamente... ");
+	
+	public void selecionar(int opcao);
+}

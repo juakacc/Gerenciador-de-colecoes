@@ -1,0 +1,55 @@
+package br.com.gerenciador.colecao.itemColecionavel.auxiliar;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import br.com.gerenciador.colecao.itemColecionavel.auxiliares.Dlc;
+
+public class DlcTest {
+	
+	Dlc d;
+
+	@Before
+	public void setUp() throws Exception {
+		d = new Dlc("Battlefield 3", "Close Quarters", "internet");
+	}
+
+	@Test
+	public void testDlc() {
+		
+		assertNotNull(d);
+		assertEquals("Battlefield 3", d.getJogo());
+		assertEquals("Close Quarters", d.getTitulo());
+		assertEquals("internet", d.getLocalizacao());
+		
+		d.setLocalizacao("cloud");
+		assertEquals("cloud", d.getLocalizacao());
+	}
+
+	@Test
+	public void testToString() {
+		
+		assertTrue("Jogo que possui = Battlefield 3, Titulo = Close Quarters, Localizacao = internet".equals(d.toString()));
+		
+		d.setLocalizacao("cloud");
+		assertFalse("Jogo que possui = Battlefield 3, Titulo = Close Quarters, Localizacao = internet".equals(d.toString()));
+		
+	}
+
+	@Test
+	public void testEqualsObject() {
+		Dlc nova = new Dlc("Battlefield 3", "Close Quarters", "internet");
+		
+		assertTrue(d.equals(nova));
+		
+		nova.setJogo("GTA IV");
+		assertFalse(d.equals(nova));
+		
+	}
+
+}

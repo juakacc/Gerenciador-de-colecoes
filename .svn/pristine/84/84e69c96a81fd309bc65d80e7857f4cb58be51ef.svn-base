@@ -1,0 +1,217 @@
+package br.com.gerenciador.colecao.serie;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import br.com.gerenciador.colecao.Item;
+import br.com.gerenciador.exceptions.SerieNotFoundException;
+
+/**
+ * Armazenamento e gerenciamento da lista de series
+ * cadastradas do usuário.
+ * 
+ * Utiliza Singleton para controlar o número de 
+ * instâncias dessa classe no sistema.
+ */
+public class RepositorioSerie {
+	
+	/**
+	 * Instância do Repositório.
+	 * */
+	private static RepositorioSerie instancia;
+	
+	/**
+	 * Recupera a instância do Repositório, se a mesma ainda não
+	 * tiver sido instanciada, chama-se o construtor e instancia
+	 * antes de retornar.
+	 * @return A instancia do Repositório.
+	 * */
+	public static RepositorioSerie getInstancia() {
+		if (instancia == null) {
+			instancia = new RepositorioSerie();
+		}
+		return instancia;
+	}
+	
+	/**
+	 * Lista de séries do usuário.
+	 * */
+	private Set<Serie> series;
+
+	/**
+	 * Constrói um Repositório e
+	 * inicializa a lista para armazenamento.
+	 * */
+	private RepositorioSerie() {
+		series = new HashSet<Serie>();
+	}
+
+	/**
+	 * Adiciona uma série a coleção de séries
+	 * @param serie - série que será adicionada
+	 * @return true se a série for adicionada, false caso contrário
+	 */	
+	public boolean adicionarSerie(Serie serie) {
+		if (serie == null) {
+			return false;
+		}
+		return series.add(serie);
+	}
+	
+	/**
+	 * Remove a série caso pertença a coleção de séries
+	 * @param serie - série que será removida
+	 * @return True caso série seja removida ou False caso contrário
+	 */	
+	public boolean removerSerie(Serie serie) {
+		if (series.remove(serie)) {
+			for (Item item : serie.getItens()) {
+				item.setSeriado(null);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove todas as séries que estão cadastradas.
+	 * @return True se ocorreu tudo bem ou False caso contrário
+	 * */
+	public boolean removerTodas() {
+		List<Serie> seriesAux = getSeries();
+		
+		if (series.removeAll(series)) {
+			for (Serie serie : seriesAux) {
+				for (Item item : serie.getItens()) {
+					item.setSeriado(null);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Recupera as séries da lista de series do usuário
+	 * que tenham o mesmo nome informado.
+	 * @param nome - nome da série que esta sendo pesquisada
+	 * @return A lista de série caso exista pelo menos uma
+	 * @throws SerieNotFoundException - caso não exista nenhuma série com esse nome
+	 */
+	public List<Serie> getSerie(String nome) throws SerieNotFoundException {
+		List<Serie> seriesAux = new ArrayList<>();
+		
+		for (Serie serie : series) {
+			if (nome.equalsIgnoreCase(serie.getNome())) {
+				seriesAux.add(serie);
+			}
+		}
+		if (seriesAux.isEmpty()) {
+			throw new SerieNotFoundException();
+		}
+		return seriesAux;
+	}
+	
+	/**
+	 * Recupera uma Serie em particular
+	 * @param nome - nome da serie
+	 * @param tipo - tipo de item que a serie armazena
+	 * @return Serie correspondente
+	 * */
+	public Serie getSerie(String nome, int tipo) {
+		Serie serie = new Serie(nome, tipo);
+		
+		for (Serie se : series) {
+			if (serie.equals(se)) {
+				return se;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Verifica se a lista de series está vazia ou não.
+	 * @return True se estiver vazia ou False caso contrário.
+	 * */
+	public boolean isVazio() {
+		return series.isEmpty();
+	}
+	
+	/**
+	 * Verifica se uma determinada trilogia pertence a lista
+	 * de trilogias cadastradas.
+	 * @param trilogia - trilogia a ser verificada
+	 * @return True se pertence ou False caso contrário
+	 * */
+	public boolean pertence(Serie serie) {
+		return series.contains(serie);
+	}
+	
+	/**
+	 * Recupera todas as séries cadastradas na lista do usuário.
+	 * @return Uma lista contendo todas as séries.
+	 * */
+	public List<Serie> getSeries() {
+		return new ArrayList<>(series);
+	}
+	
+	/**
+	 * @return O total de séries cadastradas pelo usuário.
+	 * */
+	public int totalSeries() {
+		return series.size();
+	}
+	
+	/**
+	 * Exibe todas as séries cadastradas na lista de séries do usuário.
+	 * */
+	public void mostrarSeries() {
+		
+		if (series.isEmpty()) {
+			System.out.println("\nNenhuma série cadastrada... :(");
+		} else {
+			System.out.println("\n-----------------------------");
+			System.out.println("|:::::::::: SERIES :::::::::|");
+			System.out.println("-----------------------------");
+			System.out.println(toString());
+			System.out.println("-----------------------------");
+		}
+	}
+	
+	/**
+	 * Exibe uma Serie com um determinado nome.
+	 * @param nome - nome da Seria a ser exibida.
+	 * */
+	public void verSerie(String nome) {
+		try {
+			List<Serie> lista = getSerie(nome);
+			
+			System.out.println("\n-----------------------------");
+			System.out.println("|::: SÉRIE EM PARTICULAR :::|");
+			System.out.println("-----------------------------");
+			for (Serie serie : lista) {
+				System.out.println(serie.toString() + "\n");
+			}
+			System.out.println("-----------------------------");
+		} catch (SerieNotFoundException e) {
+			System.out.println("\nNenhuma série cadastrada com esse nome... :(");
+		}
+	}
+	
+	/**
+	 * Representa a lista de séries do usuário como String.
+	 * @return A String representante
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		
+		for (Serie serie : series) {
+			str.append("\n" + serie.toString() + "\n");
+		}		
+		return str.toString();		
+	}	
+	
+}

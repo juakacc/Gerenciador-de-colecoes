@@ -1,0 +1,134 @@
+package br.com.gerenciador.colecao.itemColecionavel.auxiliares;
+
+/**
+ * Esta classe representa um DLC quando um jogo de video game possui 
+ * */
+public class Dlc {
+	
+	private String jogo;
+	private String titulo;
+	private String localizacao;	
+	
+	/**
+	 * Constroi uma nova DLC atribuindo as informacoes passadas como parametro
+	 * @param jogo - jogo ao qual a DLC pertence
+	 * @param titulo - titulo da DLC
+	 * @param localizacao - localizacao da DLC
+	 * */
+	public Dlc(String jogo, String titulo, String localizacao) {
+		this.jogo = jogo;
+		this.titulo = titulo;
+		this.localizacao = localizacao;
+	}
+	
+	/**
+	 * Representa uma DLC como String
+	 * @return String de representação
+	 * */
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append("Jogo que possui = " + getJogo());
+		s.append(", Titulo = " + getTitulo());
+		s.append(", Localizacao = " + getLocalizacao());
+		
+		return s.toString();
+	}
+	
+	/**
+	 * Retorna um valor de código de hash para a DLC
+	 * @return O código de hash
+	 * */
+	@Override
+	public int hashCode() {			// eclipse
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((jogo == null) ? 0 : jogo.hashCode());
+		result = prime * result
+				+ ((localizacao == null) ? 0 : localizacao.hashCode());
+		result = prime * result + ((titulo == null) ? 0 : titulo.hashCode());
+		return result;
+	}
+
+	/**
+	* Testa a igualdade de um objeto com esta DLC. Os dois 
+	* são iguais se eles possuem o mesmo titulo, jogo e localização.
+	* @param obj - O objeto a comparar com este itme.
+	* @return true se o objeto for igual ou false caso contrário.
+	*/	
+	@Override
+	public boolean equals(Object obj) {
+		
+		if (!(obj instanceof Dlc))
+			return false;
+		
+		Dlc outro = (Dlc) obj;
+		
+		return this.getJogo().equalsIgnoreCase(outro.getJogo()) &&
+				this.getLocalizacao().equalsIgnoreCase(outro.getLocalizacao()) &&
+				this.getTitulo().equalsIgnoreCase(outro.getTitulo());
+		
+	}
+	
+	/**
+	 * Recupera o nome do jogo que possui a DLC
+	 * @return String jogo
+	 * */
+	public String getJogo() {
+		return jogo;
+	}
+	
+	/**
+	 * Configura o nome do jogo que possui a DLC de acordo com a informada
+	 * @param jogo - novo nome para jogo
+	 * */
+	public void setJogo(String jogo) {
+		this.jogo = jogo;
+	}
+
+	/**
+	 * Retorna o titulo da DLC
+	 * @return String titulo
+	 * */
+	public String getTitulo() {
+		return titulo;
+	}
+
+	/**
+	 * Configura o titulo da DLC de acordo com a informada
+	 * @param titulo - novo titulo para a DLC
+	 * */
+	public void setTitulo(String titulo) {
+		this.titulo = titulo;
+	}
+
+	/**
+	 * Retorna a localizacao da DLC
+	 * @return String localizacao
+	 * */
+	public String getLocalizacao() {
+		return localizacao;
+	}
+
+	/**
+	 * Configura a localizacao da DLC de acordo com a informada
+	 * @param localizacao - nova localizacao
+	 * */
+	public void setLocalizacao(String localizacao) {
+		this.localizacao = localizacao;
+	}
+	
+	/**
+	 * 
+	 * */
+	public String imprimirEmArquivo() {
+		
+		StringBuilder s = new StringBuilder();
+		s.append(getJogo() + ";");
+		s.append(getTitulo() + ";");
+		s.append(getLocalizacao());
+		
+		return s.toString();
+	}
+
+}

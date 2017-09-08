@@ -1,0 +1,234 @@
+package br.com.gerenciador.pesistencia;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
+import br.com.gerenciador.amizade.*;
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.colecao.itemColecionavel.saga.*;
+import br.com.gerenciador.colecao.serie.*;
+import br.com.gerenciador.colecao.trilogia.*;
+import br.com.gerenciador.desejo.*;
+import br.com.gerenciador.emprestimo.*;
+
+/**
+ * Classe para a persistencia do estado do sistema em arquivo
+ * persite os itens, amigos, emprestimos atuais, wishlist
+ * trilogias, séries, sagas e DLC's;
+ * */
+public class Pesiste {
+
+	private Acervo acervo;
+	private MeusAmigos meusAmigos;
+	private RepositorioEmprestimo emprestados;
+	private RepositorioItensDesejados desejos;
+	private RepositorioTrilogia trilogias;
+	private RepositorioSerie series;
+	private RepositorioSaga sagas;
+	
+	/**
+	 * Constrói um objeto para salvar o log das alterações que 
+	 * foram feitas no sistema na execução atual, para que no
+	 * retorno as mesmas sejam recuperadas corretamente.
+	 * */
+	public Pesiste() {
+		acervo = Acervo.getInstancia();
+		meusAmigos = MeusAmigos.getInstancia();
+		emprestados = RepositorioEmprestimo.getInstancia();
+		desejos = RepositorioItensDesejados.getIntancia();
+		trilogias = RepositorioTrilogia.getInstancia();
+		series = RepositorioSerie.getInstancia();
+		sagas = RepositorioSaga.getInstancia();
+	}
+	
+	/**
+	 * Gerencia a gravação das informações.
+	 * */
+	public void pesistir() {
+		gravarItensDisponiveis();		
+		gravarAmigos();
+		gravarItensEmprestados();
+		gravarDesejos();
+		gravarTrilogias();
+		gravarSeries();
+		gravarSagas();
+	}
+	
+	/**
+	 * Grava a lista de itens em arquivo.
+	 * */
+	private void gravarItensDisponiveis() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("Itens.txt")));
+			List<Item> itens = acervo.getItensDisponiveis();
+			
+			for (Item item : itens) {
+				pOut.println(item.imprimirParaArquivo());
+			}
+			
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de itens...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+	
+	/**
+	 * Grava a lista de itens emprestados em arquivo.
+	 * */
+	private void gravarItensEmprestados() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+						new BufferedWriter(
+								new FileWriter("ItensEmprestados.txt")));
+				
+			List<ItemEmprestado> itensIndisponiveis = emprestados.getEmprestados();
+		
+			for (ItemEmprestado item : itensIndisponiveis) {
+				pOut.println(item.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de itens...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+	
+	/**
+	 * Grava a lista de amigos em arquivo.
+	 * */
+	private void gravarAmigos() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("Amigos.txt")));
+			
+			List<Amigo> amigos = meusAmigos.getAmigos();
+			
+			for (Amigo amigo : amigos) {
+				pOut.println(amigo.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de Amigos...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+	
+	/**
+	 * Grava a lista de itens desejados pelo usuário.
+	 * */
+	private void gravarDesejos() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("desejos.txt")));
+			
+			List<ItemDesejado> itens = desejos.getDesejos();
+			
+			for (ItemDesejado itemDesejado : itens) {
+				pOut.println(itemDesejado.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de WishList...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+
+	/**
+	 * Grava a lista de trilogias do usuário.
+	 * */
+	private void gravarTrilogias() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("trilogias.txt")));
+			
+			List<Trilogia> trilo = trilogias.getTrilogias();
+			
+			for (Trilogia trilogia : trilo) {
+				pOut.println(trilogia.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de Trilogias...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+	
+	/**
+	 * Grava a lista de séries do usuário.
+	 * */
+	private void gravarSeries() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("series.txt")));
+			
+			List<Serie> todasSeries = series.getSeries();
+			
+			for (Serie serie : todasSeries) {
+				pOut.println(serie.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de Series...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+	
+	/**
+	 * Grava a lista de sagas do usuário.
+	 * */
+	private void gravarSagas() {
+		
+		PrintWriter pOut = null;
+		try {
+			pOut = new PrintWriter(
+					new BufferedWriter(
+							new FileWriter("sagas.txt")));
+			
+			List<Saga> todasSagas = sagas.getSagas();
+			
+			for (Saga saga : todasSagas) {
+				pOut.println(saga.imprimirParaArquivo());
+			}
+		} catch (IOException e) {
+			System.err.println("Ocorreu um erro na pesistência de Sagas...");
+		} finally {
+			if (pOut != null) {
+				pOut.close();
+			}
+		}
+	}
+}

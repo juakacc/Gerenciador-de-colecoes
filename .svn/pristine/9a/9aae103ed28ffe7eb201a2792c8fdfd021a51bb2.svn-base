@@ -1,0 +1,120 @@
+package br.com.gerenciador.gerenciamento;
+
+import static br.com.gerenciador.gerenciamento.auxiliares.Valida.*;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import br.com.gerenciador.colecao.*;
+import br.com.gerenciador.desejo.*;
+import br.com.gerenciador.emprestimo.*;
+
+/**
+ * Classe para impressão da tela inicial para o usuário do sistema
+ * Com lembrete dos itens emprestados que já passaram da data prevista
+ * para a devolução e os itens de desejo do usuário que já estão a venda.
+ * */
+public class TelaInicial {
+
+	private RepositorioItensDesejados desejos;
+	private RepositorioEmprestimo emprestados;
+	private Acervo acervo;
+	
+	/**
+	 * Constrói o objeto e inicializa os atributos necessários
+	 * */
+	public TelaInicial() {
+		desejos = RepositorioItensDesejados.getIntancia();
+		emprestados = RepositorioEmprestimo.getInstancia();
+		acervo = Acervo.getInstancia();
+	}
+	
+	/**
+	 * Método para impressão da tela inicial para o usuário,
+	 * Exibindo os itens que já deveriam ter sido devolvidos e os 
+	 * itens da WishList que já estão disponíveis para a compra.
+	 * */
+	public void imprimir() {
+		
+		List<ItemDesejado> disponiveis = disponiveisParaComprar();
+		List<ItemEmprestado> vencidos = emprestadoQueVenceu();
+		
+		if (!vencidos.isEmpty()) {
+			System.out.println("-------------------------------------------------------");
+			System.out.println("|::::: ITENS QUE JÁ DEVERIAM TER SIDO RECOLHIDOS :::::|");
+			System.out.println("-------------------------------------------------------");
+			
+			for (ItemEmprestado item : vencidos) {
+				System.out.println(item.toString() + "\n");
+			}
+			System.out.println("-------------------------------------------------------");
+		}
+		
+		if (!disponiveis.isEmpty()) {
+			double total = 0;
+			System.out.println("------------------------------------------------------");
+			System.out.println("|::::::::: ITENS QUE JÀ PODEM SER COMPRADOS :::::::::|");
+			System.out.println("------------------------------------------------------");
+			
+			for (ItemDesejado item : disponiveis) {
+				System.out.println(item.toString() + "\n");
+				total += item.getItem().getPrecoDeCompra();
+			}
+			System.out.println("------------------------------------------------------");
+			System.out.println("Total...........: R$ " + total);
+			
+			if (recuperarBoolean("Deseja comprar todos os itens(1-sim/2-não)? ")) {
+				
+				for (ItemDesejado it : disponiveis) {
+					Item item = it.getItem();
+					desejos.removerItem(item);
+					if (acervo.adicionarItem(item)) {
+						System.out.println("Item adquirido e adicionado a sua coleção...");
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Método para recuperação dos itens que foram cadastrados como desejo 
+	 * do usuário e já estão disponiveis para a compra.
+	 * @return Lista contendo os itens.
+	 * */
+	private List<ItemDesejado> disponiveisParaComprar() {
+		
+		List<ItemDesejado> itensDesejados = desejos.getDesejos();
+		List<ItemDesejado> itensDisponiveis = new ArrayList<>();
+		
+		Calendar dataAtual = Calendar.getInstance();
+		dataAtual.add(Calendar.DAY_OF_YEAR, 7);
+		
+		for (ItemDesejado item : itensDesejados) {
+			if (dataAtual.compareTo(item.getData()) > 0) {
+				itensDisponiveis.add(item);
+			}
+		}
+		return itensDisponiveis;
+	}
+	
+	/**
+	 * Método para recuperação dos itens que foram emprestados e 
+	 * já deviam ter retornado ao acervo do usuário.
+	 * @return Lista contendo os itens.
+	 * */
+	private List<ItemEmprestado> emprestadoQueVenceu() {
+		
+		List<ItemEmprestado> itensEmprestados = emprestados.itens();
+		List<ItemEmprestado> itensVencidos = new ArrayList<>();
+		
+		Calendar dataAtual = Calendar.getInstance();
+		for (ItemEmprestado item : itensEmprestados) {
+			if (dataAtual.compareTo(item.getDataDaEntrega()) > 0) {
+				itensVencidos.add(item);
+			}
+		}
+		return itensVencidos;
+	}
+
+}
